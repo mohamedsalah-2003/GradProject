@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
@@ -9,55 +10,103 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import SVGComponent from "./../components/icons/sheildsvg.jsx";
+import SVGComponent from "../../components/icons/sheildsvg.jsx";
+import { LogoComponent } from "../../components/ui/logoComponent.jsx";
 
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [secure, setSecure] = useState(true);
+  const [errors, setErrors] = useState({});
+  const [focusedField, setFocusedField] = useState(null);
   const router = useRouter();
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!validateEmail(email)) {
+      newErrors.email = "Please enter a valid email";
+    }
+
+    if (!password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSignIn = () => {
+    if (validateForm()) {
+   router.replace("/(app)/(tabs)/home");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         {/* Top Icon */}
         <View style={styles.iconWrapper}>
-          <SVGComponent width={32} height={32} color="#fff" />
+          <LogoComponent />
         </View>
 
         {/* Title */}
         <Text style={styles.title}>Welcome Back</Text>
         <Text style={styles.subtitle}>
-          Sign in to your SafeGuard account
+          Sign in to your AegisIQ account
         </Text>
 
         {/* Email */}
         <Text style={styles.label}>Email</Text>
-        <View style={styles.inputWrapper}>
+        <View style={[styles.inputWrapper, errors.email && styles.inputError, focusedField === 'email' && styles.inputFocused]}>
           <Ionicons name="mail-outline" size={20} color="#8A8A8A" />
           <TextInput
             placeholder="your.email@example.com"
             placeholderTextColor="#8A8A8A"
-            style={styles.input}
+            style={[styles.input, Platform.OS === 'web' && { outline: 'none' }]}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (errors.email) {
+                setErrors({ ...errors, email: null });
+              }
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
+            onFocus={() => setFocusedField('email')}
+            onBlur={() => setFocusedField(null)}
           />
         </View>
+        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
         {/* Password */}
         <Text style={styles.label}>Password</Text>
-        <View style={styles.inputWrapper}>
+        <View style={[styles.inputWrapper, errors.password && styles.inputError, focusedField === 'password' && styles.inputFocused]}>
           <Ionicons name="lock-closed-outline" size={20} color="#8A8A8A" />
           <TextInput
             placeholder="Enter your password"
             placeholderTextColor="#8A8A8A"
-            style={styles.input}
+            style={[styles.input, Platform.OS === 'web' && { outline: 'none' }]}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(text) => {
+              setPassword(text);
+              if (errors.password) {
+                setErrors({ ...errors, password: null });
+              }
+            }}
             secureTextEntry={secure}
+            onFocus={() => setFocusedField('password')}
+            onBlur={() => setFocusedField(null)}
           />
           <TouchableOpacity onPress={() => setSecure(!secure)}>
             <Ionicons
@@ -67,6 +116,7 @@ export default function Login() {
             />
           </TouchableOpacity>
         </View>
+        {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
         {/* Forgot Password */}
         <TouchableOpacity>
@@ -74,7 +124,7 @@ export default function Login() {
         </TouchableOpacity>
 
         {/* Sign In Button */}
-        <TouchableOpacity style={styles.button} onPress={() => router.push("/home")}>
+        <TouchableOpacity style={styles.button} onPress={handleSignIn}>
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
 
@@ -103,14 +153,9 @@ const styles = StyleSheet.create({
   },
   iconWrapper: {
     alignSelf: "center",
-    backgroundColor: "#eee",
-    // color:"#fff",
-    width: 70,
-    height: 70,
-    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 24,
+    // marginBottom: 10,
   },
   title: {
     fontSize: 24,
@@ -121,7 +166,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#6B7280",
     marginTop: 8,
-    marginBottom: 30,
+  
   },
   label: {
     fontWeight: "600",
@@ -140,14 +185,31 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     marginLeft: 10,
+    borderWidth: 0,
+    underlineColorAndroid: 'transparent',
+  },
+  inputError: {
+    borderWidth: 1,
+    borderColor: "#DC2626",
+  },
+  inputFocused: {
+    borderWidth: 2,
+    borderColor: "#0891b2",
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 12,
+    marginBottom: 10,
+    marginTop: 2,
   },
   forgot: {
     marginTop: 5,
     marginBottom: 20,
     fontWeight: "600",
+    color: "#0891b2",
   },
   button: {
-    backgroundColor: "#000",
+    backgroundColor: "#0891b2",
     height: 55,
     borderRadius: 18,
     justifyContent: "center",
@@ -165,5 +227,6 @@ const styles = StyleSheet.create({
   },
   signUp: {
     fontWeight: "700",
+    color: "#0891b2",
   },
 });

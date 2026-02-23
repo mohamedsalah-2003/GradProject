@@ -1,16 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function Home() {
+
   const [smokeStatus, setSmokeStatus] = useState("Clear");
   const [motionStatus, setMotionStatus] = useState("Active");
   const [waterStatus, setWaterStatus] = useState("Dry");
@@ -23,9 +24,6 @@ export default function Home() {
     { title: "Temperature normalized in Living Room", time: "15 minutes ago" },
     { title: "All systems operational", time: "30 minutes ago" },
     { title: "Device check completed", time: "about 1 hour ago" },
-
-
-
   ];
 
   return (
@@ -68,58 +66,58 @@ export default function Home() {
         {/* Status Cards Grid */}
         <View style={styles.gridContainer}>
           {/* Smoke Card */}
-          <View style={styles.statusCard}>
+          <TouchableOpacity style={styles.statusCard}>
             <View style={[styles.iconCircle, { backgroundColor: "#C6F6D5" }]}>
               <Ionicons name="cloud" size={28} color="#22863A" />
             </View>
             <Text style={styles.statusLabel}>Smoke</Text>
             <Text style={styles.statusValue}>{smokeStatus}</Text>
-          </View>
+          </TouchableOpacity>
 
           {/* Motion Card */}
-          <View style={styles.statusCard}>
+          <TouchableOpacity style={styles.statusCard}>
             <View style={[styles.iconCircle, { backgroundColor: "#FEEBC8" }]}>
               <Ionicons name="walk" size={28} color="#92400E" />
             </View>
             <Text style={styles.statusLabel}>Motion</Text>
             <Text style={styles.statusValue}>{motionStatus}</Text>
-          </View>
+          </TouchableOpacity>
 
           {/* Water Card */}
-          <View style={styles.statusCard}>
+          <TouchableOpacity style={styles.statusCard}>
             <View style={[styles.iconCircle, { backgroundColor: "#C6F6D5" }]}>
               <Ionicons name="water" size={28} color="#22863A" />
             </View>
             <Text style={styles.statusLabel}>Water</Text>
             <Text style={styles.statusValue}>{waterStatus}</Text>
-          </View>
+          </TouchableOpacity>
 
           {/* Humidity Card */}
-          <View style={styles.statusCard}>
+          <TouchableOpacity style={styles.statusCard}>
             <View style={[styles.iconCircle, { backgroundColor: "#C6F6D5" }]}>
               <Ionicons name="water-outline" size={28} color="#22863A" />
             </View>
             <Text style={styles.statusLabel}>Humidity</Text>
             <Text style={styles.statusValue}>{humidity}</Text>
-          </View>
+          </TouchableOpacity>
 
           {/* Gas Level Card */}
-          <View style={styles.statusCard}>
+          <TouchableOpacity style={styles.statusCard}>
             <View style={[styles.iconCircle, { backgroundColor: "#FFECE6" }]}>
               <Ionicons name="flame-outline" size={28} color="#DC2626" />
             </View>
             <Text style={styles.statusLabel}>Gas Level</Text>
             <Text style={styles.statusValue}>{gasLevel}</Text>
-          </View>
+          </TouchableOpacity>
 
           {/* Temperature Card */}
-          <View style={styles.statusCard}>
+          <TouchableOpacity style={styles.statusCard}>
             <View style={[styles.iconCircle, { backgroundColor: "#FEEBC8" }]}>
               <Ionicons name="thermometer-outline" size={28} color="#92400E" />
             </View>
             <Text style={styles.statusLabel}>Temperature</Text>
             <Text style={styles.statusValue}>{temperature}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Quick Actions Section */}
