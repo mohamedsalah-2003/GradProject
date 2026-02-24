@@ -1,50 +1,55 @@
-# Welcome to your Expo app 👋
+# 🛡️ AegisIQ Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**AegisIQ** is an AI-powered risk intelligence mobile application built with React Native (Expo).  
+It provides real-time threat monitoring and intelligent alert management for smart environments.
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Key Features
 
-   ```bash
-   npm install
-   ```
+### 🔔 Real-Time Risk Alerts
+- Instant push notifications for critical threats  
+- Live updates via Socket.IO  
+- Risk-based alert prioritization  
 
-2. Start the app
+### 📊 Dynamic Risk Score Dashboard
+- Real-time household risk score (0–100)  
+- Threat classification: Safe, Warning, High Risk, Critical  
+- Visual risk indicators  
 
-   ```bash
-   npx expo start
-   ```
+### 🧠 Intelligent Threat Analysis
+- Multi-sensor correlation  
+- Hybrid Rule-Based + ML detection  
+- Explainable risk breakdown  
 
-In the output, you'll find options to open the app in a
+### 🚨 Emergency Escalation
+- Automatic escalation for critical threats  
+- Manual emergency trigger option  
+- Alert acknowledgment system  
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### 🔐 Secure Authentication
+- JWT-based login  
+- Role-based access control  
+- Secure API communication  
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 📱 Modern User Experience
+- Smooth UI animations  
+- Clean, security-focused design  
+- Dark theme optimized  
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## 🏗️ Built With
 
-```bash
-npm run reset-project
-```
+- React Native (Expo)  
+- Expo Router  
+- Socket.IO  
+- JWT Authentication  
+- Expo Push Notifications  
+- React Native Reanimated  
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## 🎯 Purpose
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+AegisIQ enhances smart home systems by adding an intelligent risk assessment layer that reduces false alarms and improves proactive safety response.
