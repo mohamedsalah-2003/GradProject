@@ -54,6 +54,7 @@ export default function Home() {
             </View>
           </View>
         </View>
+        
 
         {/* Header */}
         <View style={styles.header}>

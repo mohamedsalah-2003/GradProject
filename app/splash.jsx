@@ -3,17 +3,17 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
-    Easing,
-    useAnimatedStyle,
-    useSharedValue,
-    withDelay,
-    withTiming,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withTiming,
 } from "react-native-reanimated";
 import Loader from "../components/ui/Loader";
 import { LogoComponent } from "./../components/ui/logoComponent";
 import { logoTitleComponent as LogoTitleComponent } from "./../components/ui/logoTitleComponent";
 
-SplashScreen.preventAutoHideAsync().catch(() => {});
+SplashScreen.preventAutoHideAsync().catch(() => { });
 
 export default function Splash() {
   const router = useRouter();
@@ -70,11 +70,11 @@ export default function Splash() {
 
   return (
     <View style={styles.container}>
-        <Animated.View style={[styles.logo, logoAnimatedStyle]}>
-     <LogoComponent/>
+      <Animated.View style={[styles.logo, logoAnimatedStyle]}>
+        <LogoComponent />
       </Animated.View>
       <Animated.View style={textAnimatedStyle}>
-       <LogoTitleComponent />
+        <LogoTitleComponent />
       </Animated.View>
       {showLoader && <Loader />}
     </View>

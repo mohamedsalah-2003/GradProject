@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import SVGComponent from "../../components/icons/sheildsvg.jsx";
+
 import { LogoComponent } from "../../components/ui/logoComponent.jsx";
 
 export default function Register() {
