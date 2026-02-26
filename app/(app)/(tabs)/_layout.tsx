@@ -13,7 +13,7 @@ function TabIcon({
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
 }) {
-  const activeColor = "#0B84FF";
+  const activeColor = "#0891b2";
   const inactiveColor = "#7C8798";
 
   return (
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#EAF4FF", // نفس تأثير الصورة تقريبًا
   },
   label: {
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: "600",
   },
 });

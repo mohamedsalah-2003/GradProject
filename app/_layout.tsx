@@ -1,5 +1,11 @@
 import { Stack } from "expo-router";
+import IconThemeSync from "../components/IconThemeSync";
 
 export default function Layout() {
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <>
+      <IconThemeSync />
+      <Stack screenOptions={{ headerShown: false }} />
+    </>
+  );
 }

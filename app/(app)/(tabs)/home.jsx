@@ -28,6 +28,7 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: StatusBar.currentHeight || 0,
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
