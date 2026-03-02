@@ -7,6 +7,7 @@ import {
   TextInput,
   FlatList,
   Pressable,
+  StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -97,6 +98,8 @@ export default function DevicesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+        marginTop: StatusBar.currentHeight || 0,
+    
     paddingHorizontal: 18,
     paddingTop: 18,
   },
@@ -111,6 +114,7 @@ const styles = StyleSheet.create({
   h2: { marginTop: 4, fontSize: 14 },
 
   addBtn: {
+    backgroundColor: "#007AFF",
     flexDirection: "row",
     alignItems: "center",
     gap: 8,

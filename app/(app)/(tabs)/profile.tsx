@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, Alert, View } from "react-native";
+import { ScrollView, StyleSheet, Alert, View, StatusBar } from "react-native";
 import { useRouter } from "expo-router";
 
 import ProfileHeader from "../../../components/profile/ProfileHeader";
@@ -44,17 +44,17 @@ export default function Profile() {
       <SectionCard title="Settings" darkMode={darkMode}>
         {PROFILE_SETTINGS.map((item, idx) => (
           <SettingRow
-  key={item.key}
-  icon={item.icon}
-  title={item.title}
-  subtitle={item.subtitle}
-  type={item.type}
-  value={item.key === "darkMode" ? darkMode : undefined}
-  onToggle={item.key === "darkMode" ? setDarkMode : undefined}
-  onPress={item.type === "link" ? () => handlePressSetting(item.key) : undefined}
-  isLast={idx === PROFILE_SETTINGS.length - 1}
-  darkMode={darkMode}
-/>
+            key={item.key}
+            icon={item.icon}
+            title={item.title}
+            subtitle={item.subtitle}
+            type={item.type}
+            value={item.key === "darkMode" ? darkMode : undefined}
+            onToggle={item.key === "darkMode" ? setDarkMode : undefined}
+            onPress={item.type === "link" ? () => handlePressSetting(item.key) : undefined}
+            isLast={idx === PROFILE_SETTINGS.length - 1}
+            darkMode={darkMode}
+          />
         ))}
       </SectionCard>
 
@@ -68,6 +68,10 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
+  screen: {
+    flex: 1,
+    marginTop: StatusBar.currentHeight || 0,
+    
+  },
   content: { padding: 16 },
 });

@@ -4,24 +4,46 @@ import Constants from "expo-constants";
 
 export default function IconThemeSync() {
   useEffect(() => {
-    const isExpoGo = Constants.appOwnership === "expo";
+    // 1) Web مش مدعوم
+    if (Platform.OS === "web") return;
 
-    // Expo Go: مفيش native module => متشغّلوش
+    // 2) Expo Go غالبًا مش بيحتوي native module
+    const isExpoGo = Constants.appOwnership === "expo";
     if (isExpoGo) return;
 
-    const apply = async () => {
-      const scheme = Appearance.getColorScheme();
-      const target = scheme === "dark" ? "IconDark" : "IconLight";
+    let cancelled = false;
 
-      // dynamic import عشان ما يعملش crash وقت الـ bundle
-      const mod = await import("expo-alternate-app-icons");
-      const current = await mod.getAppIconName();
-      if (current !== target) await mod.setAlternateAppIcon(target);
+    const apply = async () => {
+      try {
+        const scheme = Appearance.getColorScheme();
+        const target = scheme === "dark" ? "IconDark" : "IconLight";
+
+        const mod = await import("expo-alternate-app-icons");
+        if (cancelled) return;
+
+        const current = await mod.getAppIconName();
+        if (cancelled) return;
+
+        if (current !== target) {
+          await mod.setAlternateAppIcon(target);
+        }
+      } catch (e) {
+        // لو الموديول مش available (build ناقص / منصة غير مدعومة) ما نكسرش التطبيق
+        // ممكن تحط console.warn لو تحب
+        // console.warn("IconThemeSync skipped:", e);
+      }
     };
 
     apply();
-    const sub = Appearance.addChangeListener(() => apply());
-    return () => sub.remove();
+
+    const sub = Appearance.addChangeListener(() => {
+      apply();
+    });
+
+    return () => {
+      cancelled = true;
+      sub.remove();
+    };
   }, []);
 
   return null;
