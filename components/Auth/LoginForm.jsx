@@ -40,7 +40,11 @@ export default function LoginForm() {
   const handleSignIn = async () => {
     if (isLoading) return;
 
+
     const { ok, payload } = actions.validate();
+
+  
+
     if (!ok) return;
 
     try {
@@ -49,6 +53,8 @@ export default function LoginForm() {
 
       const res = await signinRequest(payload);
 
+      console.log(res);
+      
       setServerMessageType("success");
       setServerMessage(res?.message || "Signed in successfully ✅");
 
