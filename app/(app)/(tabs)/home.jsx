@@ -5,10 +5,10 @@ import {
   StatusBar,
   StyleSheet,
 } from "react-native";
-import HeroSection from "../HeroSection";
-import QuickActionsSection from "../QuickActionsSection";
-import RecentActivitySection from "../RecentActivitySection";
-import SensorsSection from "../SensorsSection";
+import HeroSection from "./../../../components/Home/HeroSection";
+import QuickActionsSection from "./../../../components/Home/QuickActionsSection";
+import RecentActivitySection from "./../../../components/Home/RecentActivitySection";
+import SensorsSection from "./../../../components/Home/SensorsSection";
 import { useAuth } from "../../../context/AuthContext";
 
 export default function Home() {
