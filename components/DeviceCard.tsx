@@ -12,7 +12,7 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 
 
 
-
+// Hello Alaa and Nada
 type Props = {
   name: string;
   type: string;
