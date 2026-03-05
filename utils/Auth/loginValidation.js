@@ -1,12 +1,8 @@
-import { isValidEmail, isStrongPassword } from "./validators.js";
+import { isValidEmail, isStrongPassword } from "./validators";
 
-export type LoginErrors = {
-  email?: string;
-  password?: string;
-};
 
-export const validateLoginForm = (data: { email: string; password: string }) => {
-  const errors: LoginErrors = {};
+export const validateLoginForm = (data) => {
+  const errors = {};
 
   const email = String(data.email ?? "").trim();
   const password = String(data.password ?? "");
