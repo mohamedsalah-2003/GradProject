@@ -15,7 +15,7 @@ import { ThemedView } from "@/components/themed-view";
 import { ThemedText } from "@/components/themed-text";
 import { useThemeColor } from "@/hooks/use-theme-color";
 
-import DeviceCard from "@/components/DeviceCard";
+import DeviceCard from "@/components/Devices/DeviceCard";
 import { mockDevices } from "@/constants/mockDevices";
 
 export default function DevicesScreen() {

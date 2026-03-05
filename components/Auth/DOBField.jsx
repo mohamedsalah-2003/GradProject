@@ -160,7 +160,7 @@ export default function DOBField({
         <Modal transparent visible={open} animationType="none" onRequestClose={close}>
           <Pressable style={wStyles.full} onPress={close}>
             <BlurView
-              intensity={80}
+              intensity={30}
               tint="dark"
               experimentalBlurMethod="css"
               style={wStyles.blur}

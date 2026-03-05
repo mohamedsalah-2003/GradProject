@@ -1,3 +1,6 @@
-export const BASE_URL = __DEV__
-  ? "http://localhost:3000"
-  : "https://your-production-api.com";
+export const BASE_URL = "http://localhost:3000";
+
+
+
+// export const BASE_URL = "https://your-production-api.com";
+

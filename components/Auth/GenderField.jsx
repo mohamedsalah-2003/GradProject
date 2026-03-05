@@ -74,7 +74,7 @@ export default function GenderField({
 
         <Modal transparent visible={open} animationType="none" onRequestClose={close}>
           <Pressable style={w.full} onPress={close}>
-            <BlurView intensity={80} tint="dark" experimentalBlurMethod="css" style={w.blur} />
+            <BlurView intensity={30} tint="dark" experimentalBlurMethod="css" style={w.blur} />
             <Pressable style={w.center} onPress={() => {}}>
               <View style={w.card}>
                 <Pressable
