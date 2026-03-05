@@ -1,16 +1,27 @@
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
 
-export default function HeroSection() {
+export default function HeroSection({ name }) {
+
+  name = name ? name.split(" ").filter(Boolean).map(
+    (word) =>
+      word.charAt(0).toUpperCase() +
+      word.slice(1).toLowerCase()
+  ).join(" ") : "User";
+  const initials = (name || "User").split(" ").filter(Boolean).slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+
+
   return (
     <View style={styles.heroContainer}>
       <View style={styles.heroInner}>
         <View>
           <Text style={styles.welcomeText}>Welcome back,</Text>
-          <Text style={styles.userName}>Mohamed Salah</Text>
+          <Text style={styles.userName}>{name}</Text>
         </View>
         <View style={styles.avatarCircle}>
-          <Text style={{ color: "#fff", fontWeight: "700" }}>MS</Text>
+          <Text style={{ color: "#fff", fontWeight: "700" }}>{initials}</Text>
         </View>
       </View>
 

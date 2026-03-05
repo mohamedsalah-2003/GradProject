@@ -9,15 +9,18 @@ import HeroSection from "../HeroSection";
 import QuickActionsSection from "../QuickActionsSection";
 import RecentActivitySection from "../RecentActivitySection";
 import SensorsSection from "../SensorsSection";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function Home() {
+  const { user, isAuthReady } = useAuth();
 
+  if (!isAuthReady) return null; // أو Loader
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F3F4F6" />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <HeroSection />
+           <HeroSection name={user?.fullname || "User"} />
         <SensorsSection />
         <QuickActionsSection />
         <RecentActivitySection />
