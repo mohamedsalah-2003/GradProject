@@ -23,7 +23,6 @@ export const validateRegisterForm = ({
   dateOfBirth, // ✅ backend name
   gender,
   phoneNumber,
-  
 }) => {
   const errorsObj = {};
   const errorsArray = [];
