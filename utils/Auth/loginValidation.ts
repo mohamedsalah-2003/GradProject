@@ -1,4 +1,4 @@
-import { isValidEmail, isStrongPassword } from "./validators";
+import { isValidEmail, isStrongPassword } from "./validators.js";
 
 export type LoginErrors = {
   email?: string;
