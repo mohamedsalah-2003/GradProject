@@ -42,7 +42,7 @@ export default function Profile() {
   name={user?.fullname || "User"}
   role={user?.role || "User"}
   email={user?.email || ""}
-  phone={"Not provided"}
+  phone={user?.phoneNumber || "Not provided"}
 />
 
       <SectionCard title="Settings" darkMode={darkMode}>
