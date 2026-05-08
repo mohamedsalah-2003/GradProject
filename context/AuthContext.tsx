@@ -4,6 +4,7 @@ import { storage } from "../utils/storage";
 type User = {
   fullname: string;
   email: string;
+  phoneNumber?: string;
   gender?: string;
   dateOfBirth?: string;
   role?: string;
