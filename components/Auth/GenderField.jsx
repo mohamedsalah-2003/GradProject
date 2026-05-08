@@ -75,10 +75,9 @@ export default function GenderField({
         <Modal transparent visible={open} animationType="none" onRequestClose={close}>
           <Pressable style={w.full} onPress={close}>
             <BlurView intensity={30} tint="dark" experimentalBlurMethod="css" style={w.blur} />
-            <Pressable style={w.center} onPress={() => {}}>
+            <Pressable style={w.center} onPress={() => { }}>
               <View style={w.card}>
-                <Pressable
-                  style={w.item}
+                <Pressable style={w.item}
                   onPress={() => {
                     setGender("male");
                     callClearError();
@@ -118,7 +117,7 @@ export default function GenderField({
 
         <Modal transparent visible={open} animationType="fade" onRequestClose={close}>
           <Pressable style={ios.backdrop} onPress={close}>
-            <Pressable style={ios.card} onPress={() => {}}>
+            <Pressable style={ios.card} onPress={() => { }}>
               <Text style={ios.title}>Select gender</Text>
 
               <Picker
@@ -163,7 +162,7 @@ export default function GenderField({
 
       <Modal transparent visible={open} animationType="fade" onRequestClose={close}>
         <Pressable style={and.backdrop} onPress={close}>
-          <Pressable style={and.sheet} onPress={() => {}}>
+          <Pressable style={and.sheet} onPress={() => { }}>
             <View style={and.handle} />
             <Text style={and.title}>Select gender</Text>
 

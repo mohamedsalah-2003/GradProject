@@ -24,3 +24,4 @@ export const storage = {
     await SecureStore.deleteItemAsync(key);
   },
 };
+

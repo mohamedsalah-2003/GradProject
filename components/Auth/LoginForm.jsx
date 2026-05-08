@@ -21,6 +21,7 @@ import useLoginForm from "../../hooks/Auth/useLoginForm";
 import { useAuth } from "../../context/AuthContext";
 import { storage } from "../../utils/storage";
 import { LogoComponent } from "../ui/logoComponent";
+import axios from "axios";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -28,9 +29,11 @@ export default function LoginForm() {
 
   const [serverMessage, setServerMessage] = useState(null);
   const [serverMessageType, setServerMessageType] = useState("success");
+
   const [isLoading, setIsLoading] = useState(false);
 
   const { values, setters, ui, errors, actions } = useLoginForm();
+
   const { setUser } = useAuth();
 
   const clearServerMessage = () => {
@@ -47,14 +50,14 @@ export default function LoginForm() {
 
     if (!ok) return;
 
+
+    
     try {
       setServerMessage(null);
       setIsLoading(true);
 
       const res = await signinRequest(payload);
 
-      console.log(res);
-      
       setServerMessageType("success");
       setServerMessage(res?.message || "Signed in successfully ✅");
 
@@ -67,15 +70,21 @@ export default function LoginForm() {
       }
 
       router.replace("/(app)/(tabs)/home");
+
     } catch (error) {
+  
       setServerMessageType("error");
       if (error?.response) {
         setServerMessage(error.response.data?.message || "Invalid email or password");
       } else {
         setServerMessage(error?.message || "Something went wrong");
+        
+        
       }
+      
     } finally {
       setIsLoading(false);
+
     }
   };
 
