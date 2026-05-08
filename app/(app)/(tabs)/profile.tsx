@@ -10,10 +10,14 @@ import SystemInfoCard from "../../../components/profile/SystemInfoCard";
 import SignOutButton from "../../../components/profile/SignOutButton";
 
 import { PROFILE_SETTINGS, SYSTEM_INFO } from "../../../constants/profile";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function Profile() {
   const router = useRouter();
   const [darkMode, setDarkMode] = useState(false);
+   const { user, isAuthReady } = useAuth();
+
+  if (!isAuthReady) return null;
 
   const handlePressSetting = (key: string) => {
     Alert.alert("Pressed", key);
@@ -33,13 +37,13 @@ export default function Profile() {
     >
       <ProfileHeader darkMode={darkMode} />
 
-      <UserCard
-        darkMode={darkMode}
-        name="John Anderson"
-        role="Account Owner"
-        email="john.anderson@email.com"
-        phone="+1 (555) 123-4567"
-      />
+   <UserCard
+  darkMode={darkMode}
+  name={user?.fullname || "User"}
+  role={user?.role || "User"}
+  email={user?.email || ""}
+  phone={user?.phoneNumber || "Not provided"}
+/>
 
       <SectionCard title="Settings" darkMode={darkMode}>
         {PROFILE_SETTINGS.map((item, idx) => (

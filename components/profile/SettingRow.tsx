@@ -41,6 +41,7 @@ export default function SettingRow({
         { backgroundColor: pressed && type === "link" ? bgPressed : bg },
       ]}
     >
+      
       <View style={styles.left}>
         <Ionicons name={icon} size={20} color={iconColor} />
       </View>
@@ -50,6 +51,7 @@ export default function SettingRow({
         <Text style={[styles.sub, { color: subColor }]}>{subtitle}</Text>
       </View>
 
+      
       <View style={styles.right}>
         {type === "switch" ? (
           <Switch value={!!value} onValueChange={onToggle} />
@@ -58,18 +60,43 @@ export default function SettingRow({
         )}
       </View>
 
-      {!isLast ? <View style={[styles.divider, { backgroundColor: divider }]} /> : null}
+      
+      {!isLast ? (
+        <View style={[styles.divider, { backgroundColor: divider }]} />
+      ) : null}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { paddingVertical: 14, paddingHorizontal: 14 },
-  left: { width: 34, alignItems: "center", justifyContent: "center" },
-  mid: { flex: 1, paddingHorizontal: 10 },
-  right: { minWidth: 40, alignItems: "flex-end", justifyContent: "center" },
-  title: { fontSize: 14, fontWeight: "800" },
-  sub: { marginTop: 2, fontSize: 12 },
+  row: {
+    flexDirection: "row", 
+    alignItems: "center", 
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+  },
+  left: {
+    width: 34,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mid: {
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+  right: {
+    minWidth: 40,
+    alignItems: "flex-end",
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  sub: {
+    marginTop: 2,
+    fontSize: 12,
+  },
   divider: {
     position: "absolute",
     left: 14,
