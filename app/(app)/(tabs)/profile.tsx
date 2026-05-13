@@ -33,7 +33,7 @@ const formatName = (name: string) => {
 const handlePressSetting = (key: string) => {
     switch (key) {
       case "notifications":
-        router.push("/settings/notifications"); 
+        router.push("/alerts");
         break;
       case "security":
         router.push("/settings/security"); 
