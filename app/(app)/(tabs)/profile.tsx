@@ -17,6 +17,17 @@ export default function Profile() {
   const [darkMode, setDarkMode] = useState(false);
    const { user, isAuthReady } = useAuth();
 
+const formatName = (name: string) => {
+  if (!name) return "";
+
+  return name
+    .split(" ")
+    .map((word: string) =>
+      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    )
+    .join(" ");
+};
+
   if (!isAuthReady) return null;
 
 const handlePressSetting = (key: string) => {
@@ -51,7 +62,7 @@ const handlePressSetting = (key: string) => {
 
    <UserCard
   darkMode={darkMode}
-  name={user?.fullname || "User"}
+  name={formatName(user?.fullname || "") || "User"}
   role={user?.role || "User"}
   email={user?.email || ""}
   phone={user?.phoneNumber || "Not provided"}
