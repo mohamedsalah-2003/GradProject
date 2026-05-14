@@ -1,23 +1,31 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  View,
-  StyleSheet,
-  TextInput,
   FlatList,
   Pressable,
   StatusBar,
+  StyleSheet,
   Text,
+  TextInput,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
-import { ThemedView } from "@/components/themed-view";
+import AddDeviceModal from "@/components/Devices/AddDeviceModal";
+import DeleteDeviceModal from "@/components/Devices/DeleteDeviceModal";
 import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { getAllDevices } from "../../../services/devices.service";
 
 export default function DevicesScreen() {
+  const router = useRouter();
   const [devices, setDevices] = useState([]);
   const [query, setQuery] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedDeviceId, setSelectedDeviceId] = useState(null);
+  const [selectedDeviceName, setSelectedDeviceName] = useState("");
 
   const background = useThemeColor({}, "background");
   const text = useThemeColor({}, "text");
@@ -58,46 +66,70 @@ export default function DevicesScreen() {
 
   const renderItem = ({ item }) => {
     return (
-      <View style={[styles.card, { borderColor: border }]}>
-        {/* top row */}
-        <View style={styles.rowBetween}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.name, { color: text }]}>
-              {item.name}
-            </Text>
+      <Pressable
+        onPress={() => router.push(`/(app)/devices/${item._id}`)}
+        style={({ pressed }) => [
+          styles.cardPressable,
+          pressed && styles.cardPressed,
+        ]}
+      >
+        <View style={[styles.card, { borderColor: border }]}>
+          {/* top row */}
+          <View style={styles.rowBetween}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.name, { color: text }]}>
+                {item.name}
+              </Text>
 
-            <Text style={[styles.sub, { color: muted }]}>
-              📍 {item.location} • 🏠 {item.homeId?.name}
-            </Text>
+              <Text style={[styles.sub, { color: muted }]}>
+                📍 {item.location} • 🏠 {item.homeId?.name}
+              </Text>
+            </View>
+
+            {/* Actions */}
+            <View style={styles.actions}>
+              {/* status */}
+              <View
+                style={[
+                  styles.status,
+                  {
+                    backgroundColor: item.isActive ? "#1DB95420" : "#ff3b3020",
+                  },
+                ]}
+              >
+                <Text
+                  style={{
+                    color: item.isActive ? "#1DB954" : "#ff3b30",
+                    fontWeight: "700",
+                    fontSize: 12,
+                  }}
+                >
+                  {item.isActive ? "Active" : "Offline"}
+                </Text>
+              </View>
+
+              {/* Delete button */}
+              <Pressable
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  setSelectedDeviceId(item._id);
+                  setSelectedDeviceName(item.name);
+                  setShowDeleteModal(true);
+                }}
+                style={styles.deleteBtn}
+              >
+                <Ionicons name="trash-outline" size={18} color="#ff3b30" />
+              </Pressable>
+            </View>
           </View>
 
-          {/* status */}
-          <View
-            style={[
-              styles.status,
-              {
-                backgroundColor: item.isActive ? "#1DB95420" : "#ff3b3020",
-              },
-            ]}
-          >
-            <Text
-              style={{
-                color: item.isActive ? "#1DB954" : "#ff3b30",
-                fontWeight: "700",
-                fontSize: 12,
-              }}
-            >
-              {item.isActive ? "Active" : "Offline"}
-            </Text>
-          </View>
+          {/* bottom row */}
+          <Text style={[styles.meta, { color: muted }]}>
+            Last Seen: {item.lastSeen ? item.lastSeen : "Never"} •
+            Created: {new Date(item.createdAt).toLocaleDateString()}
+          </Text>
         </View>
-
-        {/* bottom row */}
-        <Text style={[styles.meta, { color: muted }]}>
-          Last Seen: {item.lastSeen ? item.lastSeen : "Never"} •
-          Created: {new Date(item.createdAt).toLocaleDateString()}
-        </Text>
-      </View>
+      </Pressable>
     );
   };
 
@@ -115,7 +147,10 @@ export default function DevicesScreen() {
           </ThemedText>
         </View>
 
-        <Pressable style={[styles.addBtn, { backgroundColor: tint }]}>
+        <Pressable 
+          style={[styles.addBtn, { backgroundColor: tint }]}
+          onPress={() => setShowAddModal(true)}
+        >
           <Ionicons name="add" size={20} color="#fff" />
         </Pressable>
       </View>
@@ -139,6 +174,26 @@ export default function DevicesScreen() {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 30 }}
         showsVerticalScrollIndicator={false}
+      />
+
+      {/* Add Device Modal */}
+      <AddDeviceModal 
+        visible={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSuccess={fetchDevices}
+      />
+
+      {/* Delete Device Modal */}
+      <DeleteDeviceModal
+        visible={showDeleteModal}
+        deviceId={selectedDeviceId}
+        deviceName={selectedDeviceName}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedDeviceId(null);
+          setSelectedDeviceName("");
+        }}
+        onSuccess={fetchDevices}
       />
     </ThemedView>
   );
@@ -209,6 +264,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
+  },
+
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  deleteBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   meta: {
