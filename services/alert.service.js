@@ -1,31 +1,21 @@
 import axios from "axios";
-import { storage } from "../utils/storage";
+import api from "./api";
 
-const API_URL = "http://localhost:3000/alerts";
+export const getUserAlerts = async () => {
+  const response = await api.get("/alerts");
+  return response.data;
+};
 
-export const alertService = {
-getAllAlerts: async () => {
-    try {
-        const token = await storage.get("accesstoken");
-        
-        const response = await axios.get("http://localhost:3000/alerts", {
-            headers: { 
-                
-                'accesstoken': token 
-            }
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Alert Service Error:", error.response?.data);
-        throw error;
-    }
-},
+export const getAlertById = async (id) => {
+  const response = await api.get(`/alerts/${id}`);
+  return response.data;
+};
 
- markAsRead: async (id) => {
-    const token = await storage.get("accesstoken");
-    await axios.patch(`${API_URL}/${id}/read`, {}, {
-      
-      headers: { 'accesstoken': token }
-    });
-}
+export const markAlertAsRead = async (id) => {
+  const response = await api.patch(`/alerts/${id}/read`);
+  return response.data;
+};
+export const markAlertAsResolved = async (id) => {
+    const response = await api.patch(`/alerts/${id}/resolved`);
+    return response.data;
 };
