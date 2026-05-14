@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FlatList,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -17,13 +19,29 @@ import EmptyAlerts from "../../../components/Alerts/EmptyAlerts";
 import Loader from "../../../components/ui/Loader";
 
 import { useAuth } from "../../../context/AuthContext";
-import { getUserAlerts, markAlertAsRead } from "../../../services/alert.service";
-import { platformContainerWidth } from "../../styles/platformStyles";
+import {
+  getUserAlerts,
+  markAlertAsRead,
+} from "../../../services/alert.service";
+
 import { AlertItem } from "../../Types/alert";
 
 export default function Alerts() {
   const router = useRouter();
   const { logout } = useAuth();
+
+  const { width } = useWindowDimensions();
+
+  const isDesktop = width >= 1024;
+  const isTablet = width >= 768;
+
+  const horizontalPadding = isDesktop ? 32 : isTablet ? 24 : 16;
+
+  const contentWidth = useMemo(() => {
+    if (isDesktop) return 900;
+    if (isTablet) return 700;
+    return "100%";
+  }, [isDesktop, isTablet]);
 
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
@@ -50,7 +68,10 @@ export default function Alerts() {
           title: "Anomaly Detected",
           description: alert.message,
           type: alertType,
-          time: new Date(alert.createdAt).toLocaleString(),
+          time: new Intl.DateTimeFormat("en-US", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          }).format(new Date(alert.createdAt)),
           unread: !alert.isRead,
           deviceName: alert.deviceId?.name ?? "Unknown device",
           location:
@@ -82,7 +103,6 @@ export default function Alerts() {
   }, [fetchAlerts]);
 
   const filteredAlerts = useMemo(() => {
-
     if (selectedFilter === "All") {
       return alerts;
     }
@@ -103,9 +123,15 @@ export default function Alerts() {
   const handleAlertPress = async (id: string) => {
     try {
       await markAlertAsRead(id);
+
       setAlerts((prev) =>
         prev.map((alert) =>
-          alert.id === id ? { ...alert, unread: false } : alert
+          alert.id === id
+            ? {
+                ...alert,
+                unread: false,
+              }
+            : alert
         )
       );
     } catch (error) {
@@ -113,7 +139,7 @@ export default function Alerts() {
     } finally {
       router.push({
         pathname: "/(app)/alerts/[id]",
-        params: { id: id },
+        params: { id },
       });
     }
   };
@@ -126,7 +152,16 @@ export default function Alerts() {
   ) => (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.centered}>
-        <View style={styles.statusCard}>
+        <View
+          style={[
+            styles.statusCard,
+            {
+              maxWidth: 520,
+              width: "100%",
+              padding: isDesktop ? 36 : 28,
+            },
+          ]}
+        >
           <Text style={styles.statusTitle}>{title}</Text>
 
           <Text style={styles.statusSubtitle}>{description}</Text>
@@ -179,7 +214,16 @@ export default function Alerts() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          {
+            paddingHorizontal: horizontalPadding,
+            maxWidth: contentWidth,
+            width: "100%",
+          },
+        ]}
+      >
         <View style={styles.headerSection}>
           <AlertsHeader unreadCount={unreadCount} />
 
@@ -199,13 +243,21 @@ export default function Alerts() {
           data={filteredAlerts}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            filteredAlerts.length === 0 && {
+              flexGrow: 1,
+              justifyContent: "center",
+            },
+          ]}
           ListEmptyComponent={<EmptyAlerts />}
           renderItem={({ item }) => (
-            <AlertCard
-              item={item}
-              onPress={() => handleAlertPress(item.id)}
-            />
+            <View style={styles.cardWrapper}>
+              <AlertCard
+                item={item}
+                onPress={() => handleAlertPress(item.id)}
+              />
+            </View>
           )}
         />
       </View>
@@ -221,13 +273,13 @@ const styles = StyleSheet.create({
 
   container: {
     flex: 1,
-    paddingHorizontal: 16,
     paddingTop: 12,
-    ...platformContainerWidth,
+    alignSelf: "center",
   },
 
   headerSection: {
     marginBottom: 10,
+    width: "100%",
   },
 
   summaryText: {
@@ -240,6 +292,11 @@ const styles = StyleSheet.create({
     paddingBottom: 120,
   },
 
+  cardWrapper: {
+    width: "100%",
+    alignSelf: "center",
+  },
+
   centered: {
     flex: 1,
     justifyContent: "center",
@@ -248,16 +305,19 @@ const styles = StyleSheet.create({
   },
 
   statusCard: {
-    width: "100%",
     backgroundColor: "#FFFFFF",
     borderRadius: 20,
-    padding: 28,
     alignItems: "center",
+
     shadowColor: "#000",
-    shadowOpacity: 0.05,
+    shadowOpacity: Platform.OS === "ios" ? 0.08 : 0.12,
     shadowRadius: 18,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 5,
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+
+    elevation: Platform.OS === "android" ? 4 : 0,
   },
 
   statusTitle: {
@@ -281,6 +341,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 999,
+    minWidth: 160,
+    alignItems: "center",
   },
 
   actionText: {
