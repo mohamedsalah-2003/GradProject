@@ -22,7 +22,7 @@ import { useAuth } from "../../context/AuthContext";
 import { storage } from "../../utils/storage";
 import { LogoComponent } from "../ui/logoComponent";
 import axios from "axios";
-
+import {connectSocket} from "./../../services/socket.ts";
 export default function LoginForm() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -61,7 +61,10 @@ export default function LoginForm() {
       setServerMessageType("success");
       setServerMessage(res?.message || "Signed in successfully ✅");
 
-      if (res?.accesstoken) await storage.set("accesstoken", res.accesstoken);
+      if (res?.accesstoken) {
+        await storage.set("accesstoken", res.accesstoken);
+        connectSocket(res.accesstoken);
+      }
       if (res?.refreshtoken) await storage.set("refreshtoken", res.refreshtoken);
 
       if (res?.user) {

@@ -1,48 +1,50 @@
 import { create } from "zustand";
-
-export interface AlertItem {
-  id: string;
-  title: string;
-  description: string;
-  type: "Critical" | "Warning" | "Info";
-  time: string;
-  unread?: boolean;
-}
+import { AlertItem } from "../Types/alert";
 
 interface AlertsStore {
   alerts: AlertItem[];
+  unreadCount: number;
 
   addAlert: (alert: AlertItem) => void;
-
   markAsRead: (id: string) => void;
-
   setAlerts: (alerts: AlertItem[]) => void;
 }
 
-export const useAlertsStore = create<AlertsStore>(
-  (set) => ({
-    alerts: [],
+export const useAlertsStore = create<AlertsStore>((set) => ({
+  alerts: [],
+  unreadCount: 0,
 
-    setAlerts: (alerts) =>
-      set({
-        alerts,
-      }),
+  setAlerts: (alerts) =>
+    set({
+      alerts,
+      unreadCount: alerts.filter((a) => a.unread).length,
+    }),
 
-    addAlert: (alert) =>
-      set((state) => ({
-        alerts: [alert, ...state.alerts],
-      })),
+  addAlert: (alert) =>
+    set((state) => {
+      
+      const exists = state.alerts.some((a) => a.id === alert.id);
+      if (exists) return state;
 
-    markAsRead: (id) =>
-      set((state) => ({
-        alerts: state.alerts.map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                unread: false,
-              }
-            : item
-        ),
-      })),
-  })
-);
+      const updated = [alert, ...state.alerts];
+
+      return {
+        alerts: updated,
+        unreadCount: updated.filter((a) => a.unread).length,
+      };
+    }),
+
+  markAsRead: (id) =>
+    set((state) => {
+      const updated = state.alerts.map((item) =>
+        item.id === id ? { ...item, unread: false } : item
+      );
+
+      return {
+        alerts: updated,
+        unreadCount: updated.filter((a) => a.unread).length,
+      };
+    }),
+
+    
+}));

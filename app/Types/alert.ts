@@ -1,4 +1,4 @@
-export type AlertType = "Critical" | "Warning";
+export type AlertType = "Critical" | "Warning"| "Info";
 
 export interface AlertItem {
   id: string;
