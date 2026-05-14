@@ -1,29 +1,50 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { View, Text, StyleSheet, Platform } from "react-native";
-
+import { useAlertsStore } from "../../store/alertsStore";
 function TabIcon({
   focused,
   iconFocused,
   icon,
   label,
+  badgeCount,
 }: {
   focused: boolean;
   iconFocused: keyof typeof Ionicons.glyphMap;
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
+  badgeCount?: number;
 }) {
   const activeColor = "#0891b2";
   const inactiveColor = "#7C8798";
 
   return (
     <View style={[styles.item, focused && styles.itemActive]}>
-      <Ionicons
-        name={focused ? iconFocused : icon}
-        size={22}
-        color={focused ? activeColor : inactiveColor}
-      />
-      <Text style={[styles.label, { color: focused ? activeColor : inactiveColor }]}>
+
+      {/* ICON WRAPPER */}
+      <View style={styles.iconWrapper}>
+        <Ionicons
+          name={focused ? iconFocused : icon}
+          size={22}
+          color={focused ? activeColor : inactiveColor}
+        />
+
+        {badgeCount && badgeCount > 0 && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>
+              {badgeCount > 9 ? "9+" : badgeCount}
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* LABEL */}
+      <Text
+        style={[
+          styles.label,
+          { color: focused ? activeColor : inactiveColor },
+        ]}
+      >
         {label}
       </Text>
     </View>
@@ -31,6 +52,7 @@ function TabIcon({
 }
 
 export default function TabsLayout() {
+  const unreadCount = useAlertsStore((state) => state.unreadCount);
   return (
     <Tabs
       screenOptions={{
@@ -52,6 +74,7 @@ export default function TabsLayout() {
               icon="home-outline"
               iconFocused="home"
               label="Home"
+              badgeCount={undefined}
             />
           ),
         }}
@@ -66,11 +89,12 @@ export default function TabsLayout() {
               icon="notifications-outline"
               iconFocused="notifications"
               label="Alerts"
+              badgeCount={unreadCount}
             />
           ),
         }}
       />
-  
+
 
 
       <Tabs.Screen
@@ -82,6 +106,7 @@ export default function TabsLayout() {
               icon="hardware-chip-outline"
               iconFocused="hardware-chip"
               label="Devices"
+              badgeCount={undefined}
             />
           ),
         }}
@@ -96,6 +121,7 @@ export default function TabsLayout() {
               icon="bar-chart-outline"
               iconFocused="bar-chart"
               label="Analytics"
+              badgeCount={undefined}
             />
           ),
         }}
@@ -110,6 +136,7 @@ export default function TabsLayout() {
               icon="person-outline"
               iconFocused="person"
               label="Profile"
+              badgeCount={undefined}
             />
           ),
         }}
@@ -147,4 +174,28 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: "600",
   },
+
+  badge: {
+    position: "absolute",
+    top: -6,
+    right: -10,
+    backgroundColor: "red",
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+
+  badgeText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  iconWrapper: {
+  position: "relative",
+  alignItems: "center",
+  justifyContent: "center",
+},
 });
