@@ -1,20 +1,19 @@
 import React from "react";
 import {
-  View,
-  Text,
   StyleSheet,
+  Text,
   TouchableOpacity,
-  Platform,
+  View
 } from "react-native";
 
 import {
   Feather,
-  MaterialIcons,
   Ionicons,
+  MaterialIcons,
 } from "@expo/vector-icons";
+import { platformCardStyle } from "./../../app/styles/platformStyles";
 import { AlertItem } from "./../../app/Types/alert";
 import { alertColors } from "./../../constants/alertColors";
-import { platformCardStyle } from "./../../app/styles/platformStyles";
 
 interface Props {
   item: AlertItem;

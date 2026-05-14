@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
@@ -14,8 +14,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Loader from "../../../components/ui/Loader";
 
 import {
-    getAlertById,
-    markAlertAsResolved,
+  getAlertById,
+  markAlertAsResolved,
 } from "../../../services/alert.service";
 
 import { AlertItem } from "../../Types/alert";
