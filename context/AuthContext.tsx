@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useAlertsStore } from "../app/store/alertsStore";
 import { storage } from "../utils/storage";
 
 type User = {
@@ -9,6 +10,7 @@ type User = {
   dateOfBirth?: string;
   role?: string;
   profilePicture?: any;
+  unreadAlerts?: number;
 };
 
 type AuthContextType = {
@@ -24,11 +26,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
 
+  const setUnreadCount = useAlertsStore((state) => state.setUnreadCount);
+
   useEffect(() => {
     const init = async () => {
       try {
         const storedUser = await storage.get("user");
-        if (storedUser) setUser(JSON.parse(storedUser));
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          if (typeof parsedUser.unreadAlerts === "number") {
+            setUnreadCount(parsedUser.unreadAlerts);
+          }
+        }
       } catch (e) {
         // ignore
       } finally {
@@ -37,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     init();
-  }, []);
+  }, [setUnreadCount]);
 
   const logout = async () => {
     await storage.remove("user");

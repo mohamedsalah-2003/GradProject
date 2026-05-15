@@ -18,6 +18,7 @@ import AlertsHeader from "../../../components/Alerts/AlertsHeader";
 import EmptyAlerts from "../../../components/Alerts/EmptyAlerts";
 import Loader from "../../../components/ui/Loader";
 
+import { useAlertsStore } from "../../../app/store/alertsStore";
 import { useAuth } from "../../../context/AuthContext";
 import {
   getUserAlerts,
@@ -49,6 +50,11 @@ export default function Alerts() {
   const [tokenExpired, setTokenExpired] = useState(false);
   const [fetchError, setFetchError] = useState(false);
 
+  const [count, setCount] = useState(0);
+  const unreadCount = useAlertsStore((state) => state.unreadCount);
+  const setUnreadCount = useAlertsStore((state) => state.setUnreadCount);
+  const markAlertRead = useAlertsStore((state) => state.markAsRead);
+  const decrementUnreadCount = useAlertsStore((state) => state.decrementUnreadCount);
   const fetchAlerts = useCallback(async () => {
     setLoading(true);
     setFetchError(false);
@@ -56,7 +62,8 @@ export default function Alerts() {
 
     try {
       const response = await getUserAlerts();
-
+      setCount(response.count);
+      setUnreadCount(response.unreadCount);
       const apiAlerts = response.alerts.map((alert: any) => {
         const alertType: "Critical" | "Warning" =
           alert.severity === "critical" || alert.severity === "high"
@@ -110,10 +117,7 @@ export default function Alerts() {
     return alerts.filter((item) => item.type === selectedFilter);
   }, [selectedFilter, alerts]);
 
-  const unreadCount = useMemo(
-    () => alerts.filter((item) => item.unread).length,
-    [alerts]
-  );
+
 
   const handleSignInAgain = async () => {
     await logout();
@@ -123,7 +127,8 @@ export default function Alerts() {
   const handleAlertPress = async (id: string) => {
     try {
       await markAlertAsRead(id);
-
+      markAlertRead(id);
+      decrementUnreadCount();
       setAlerts((prev) =>
         prev.map((alert) =>
           alert.id === id
@@ -228,8 +233,8 @@ export default function Alerts() {
           <AlertsHeader unreadCount={unreadCount} />
 
           <Text style={styles.summaryText}>
-            {alerts.length} active alert
-            {alerts.length === 1 ? "" : "s"}
+            {count} active alert
+            {count === 1 ? "" : "s"}
             {unreadCount > 0 ? ` · ${unreadCount} unread` : ""}
           </Text>
         </View>

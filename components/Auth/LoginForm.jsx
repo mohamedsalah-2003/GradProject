@@ -16,13 +16,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ResponseMessage from "../../components/Auth/responseMessage";
 import Loader from "../../components/ui/Loader";
 
-import { signinRequest } from "../../services/auth.service";
-import useLoginForm from "../../hooks/Auth/useLoginForm";
+import { useAlertsStore } from "../../app/store/alertsStore";
 import { useAuth } from "../../context/AuthContext";
+import useLoginForm from "../../hooks/Auth/useLoginForm";
+import { signinRequest } from "../../services/auth.service";
 import { storage } from "../../utils/storage";
 import { LogoComponent } from "../ui/logoComponent";
-import axios from "axios";
-import {connectSocket} from "./../../services/socket.ts";
+import { connectSocket } from "./../../services/socket.ts";
 export default function LoginForm() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -35,6 +35,7 @@ export default function LoginForm() {
   const { values, setters, ui, errors, actions } = useLoginForm();
 
   const { setUser } = useAuth();
+  const setUnreadCount = useAlertsStore((state) => state.setUnreadCount);
 
   const clearServerMessage = () => {
     if (serverMessage) setServerMessage(null);
@@ -69,6 +70,9 @@ export default function LoginForm() {
 
       if (res?.user) {
         setUser(res.user);
+        if (typeof res.user.unreadAlerts === "number") {
+          setUnreadCount(res.user.unreadAlerts);
+        }
         await storage.set("user", JSON.stringify(res.user));
       }
 

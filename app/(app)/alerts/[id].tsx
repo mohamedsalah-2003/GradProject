@@ -51,7 +51,7 @@ export default function AlertDetails() {
           description: alertData.message,
           type:
             alertData.severity === "critical" ||
-            alertData.severity === "high"
+              alertData.severity === "high"
               ? "Critical"
               : "Warning",
           time: new Date(alertData.createdAt).toLocaleString(),
@@ -98,15 +98,15 @@ export default function AlertDetails() {
   const serviceStyle =
     alert?.type === "Critical"
       ? {
-          containerBg: "#FEE2E2",
-          badgeBg: "#FECACA",
-          badgeText: "#B91C1C",
-        }
+        containerBg: "#FEE2E2",
+        badgeBg: "#FECACA",
+        badgeText: "#B91C1C",
+      }
       : {
-          containerBg: "#FEF3C7",
-          badgeBg: "#FDE68A",
-          badgeText: "#92400E",
-        };
+        containerBg: "#FEF3C7",
+        badgeBg: "#FDE68A",
+        badgeText: "#92400E",
+      };
 
   if (loading) {
     return (
@@ -246,8 +246,8 @@ export default function AlertDetails() {
             {resolved
               ? "Resolved"
               : resolving
-              ? "Resolving..."
-              : "Mark as Resolved"}
+                ? "Resolving..."
+                : "Mark as Resolved"}
           </Text>
         </TouchableOpacity>
       </ScrollView>
