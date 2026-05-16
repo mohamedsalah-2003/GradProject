@@ -57,10 +57,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-
-        // نخلي الـ tabBarButton هو اللي ياخد المساحة بدل الـ icon/label الافتراضيين
         tabBarShowLabel: false,
-
         tabBarStyle: styles.tabBar,
         tabBarItemStyle: styles.tabBarItem,
       }}
