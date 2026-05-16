@@ -1,159 +1,593 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+  TouchableOpacity,
+  Animated,
+} from 'react-native';
 import { LineChart, BarChart } from 'react-native-chart-kit';
-import axios from 'axios';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { getAnalytics } from "../../../services/analytics.service";
 
-const { width: windowWidth } = Dimensions.get("window");
+const COLORS = {
+  bg: '#f5f6fa',
+  surface: '#ffffff',
+  card: '#ffffff',
+  border: '#e8eaf0',
+  accent: '#3b82f6',
+  green: '#22c55e',
+  orange: '#f59e0b',
+  red: '#ef4444',
+  purple: '#8b5cf6',
+  textPrimary: '#111827',
+  textSecondary: '#6b7280',
+  textMuted: '#9ca3af',
+};
 
-const AnalyticsScreen = () => {
-  const [data, setData] = useState({ 
-    readings: [], 
-    summary: { alerts: 0, devices: 0, critical: 2, uptime: '99.2%' }, 
-    weekly: [2, 1, 3, 0, 2, 1, 4] 
-  });
+const RANGES = ['24h', '7d', '30d'];
+
+const { width: windowWidth } = Dimensions.get('window');
+
+const StatCard = ({ label, value, color, iconName, iconLib = 'Ionicons', fadeAnim }) => {
+  const IconComponent = iconLib === 'MaterialCommunityIcons' ? MaterialCommunityIcons : Ionicons;
+  return (
+    <Animated.View style={[styles.statCard, { opacity: fadeAnim }]}>
+      <View style={[styles.statIconWrap, { backgroundColor: color + '18' }]}>
+        <IconComponent name={iconName} size={20} color={color} />
+      </View>
+      <Text style={[styles.statValue, { color }]}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </Animated.View>
+  );
+};
+
+const SectionHeader = ({ title, subtitle, iconName, iconColor }) => (
+  <View style={styles.sectionHeader}>
+    <View style={styles.sectionTitleRow}>
+      {iconName && (
+        <Ionicons name={iconName} size={17} color={iconColor || COLORS.textSecondary} style={{ marginRight: 6 }} />
+      )}
+      <Text style={styles.sectionTitle}>{title}</Text>
+    </View>
+    {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
+  </View>
+);
+
+const AnomalyBadge = ({ type, count }) => {
+  const schemes = {
+    fire:           { bg: '#fef2f2', text: '#ef4444', dot: '#ef4444' },
+    gas_leak:       { bg: '#fffbeb', text: '#d97706', dot: '#f59e0b' },
+    intrusion:      { bg: '#eff6ff', text: '#2563eb', dot: '#3b82f6' },
+    water_leak:     { bg: '#f0fdf4', text: '#16a34a', dot: '#22c55e' },
+    energy_anomaly: { bg: '#f5f3ff', text: '#7c3aed', dot: '#8b5cf6' },
+  };
+  const scheme = schemes[type] || { bg: '#f9fafb', text: '#6b7280', dot: '#9ca3af' };
+  const label = type.replace('_', ' ');
+
+  return (
+    <View style={[styles.anomalyBadge, { backgroundColor: scheme.bg }]}>
+      <View style={[styles.anomalyDot, { backgroundColor: scheme.dot }]} />
+      <Text style={[styles.anomalyType, { color: scheme.text }]}>{label}</Text>
+      <Text style={[styles.anomalyCount, { color: scheme.text }]}>{count}</Text>
+    </View>
+  );
+};
+
+const Analytics = () => {
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [chartWidth, setChartWidth] = useState(windowWidth - 60);
+  const [error, setError] = useState(null);
+  const [selectedRange, setSelectedRange] = useState('24h');
+  const [chartWidth, setChartWidth] = useState(windowWidth - 48);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const updateLayout = () => {
-      setChartWidth(Dimensions.get("window").width - 60);
-    };
-    const subscription = Dimensions.addEventListener("change", updateLayout);
-    return () => subscription.remove();
+    const sub = Dimensions.addEventListener('change', () => {
+      setChartWidth(Dimensions.get('window').width - 48);
+    });
+    return () => sub.remove();
   }, []);
 
-  const processData = (allReadings) => {
-    const uniqueDevices = [...new Set(allReadings.map(r => r.deviceId))].length;
-    const alertsCount = allReadings.filter(r => r.temp > 30 || r.gas > 0.05).length;
-    return {
-      readings: allReadings.slice(-10),
-      summary: { alerts: alertsCount, devices: uniqueDevices, critical: 2, uptime: '99.2%' },
-      weekly: [2, 1, 3, 0, 2, 1, 4] 
-    };
-  };
-
-  const fetchReadings = async () => {
+  const fetchAnalytics = async (range) => {
+    setLoading(true);
+    setError(null);
+    fadeAnim.setValue(0);
     try {
-      const response = await axios.get('http://localhost:3000/readings/', {
-        headers: { 'accesstoken': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2YTA3NTY2N2NjMjk4OTg0ZTYyYWRmZmIiLCJlbWFpbCI6ImFsYWFzYXllZDIwMDMxMTVAZ21haWwuY29tIiwiaWF0IjoxNzc4ODcwMjY3LCJleHAiOjE3Nzg4Nzc0NjcsImp0aSI6IjgwY2Q2OWRlLTA4ZDktNGFiZi05YjM4LTYwZjUyYWM4NGNkZiJ9.6yEGTXaKOYVNtDxMJE3_UDf3Lf0E27YzU3SpvW48uL8' }
-      });
-      setData(processData(response.data.readings || []));
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
+      const data  = await getAnalytics(range);
+      setAnalytics(data);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load analytics. Please try again.');
+    } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchReadings(); }, []);
+  useEffect(() => {
+    fetchAnalytics(selectedRange);
+  }, [selectedRange]);
 
-  const chartConfig = (color) => ({
-    backgroundGradientFrom: "#ffffff",
-    backgroundGradientTo: "#ffffff",
-    color: (opacity = 1) => color(opacity),
-    labelColor: (opacity = 1) => `rgba(100, 100, 100, ${opacity})`,
-    strokeWidth: 3,
-    decimalPlaces: 2,
+  const chartConfig = (lineColor) => ({
+    backgroundGradientFrom: COLORS.card,
+    backgroundGradientTo: COLORS.card,
+    color: (opacity = 1) => lineColor(opacity),
+    labelColor: () => COLORS.textMuted,
+    strokeWidth: 2,
+    decimalPlaces: 1,
+    propsForDots: {
+      r: '3',
+      strokeWidth: '1',
+      stroke: COLORS.card,
+    },
+    propsForBackgroundLines: {
+      stroke: COLORS.border,
+      strokeDasharray: '4',
+    },
   });
 
-  if (loading) return <ActivityIndicator size="large" color="#4CAF50" style={{flex:1, marginTop: 100}} />;
+  const buildChartData = (key, label) => {
+    const series = analytics?.timeSeries ?? [];
+    const MAX_POINTS = 7;
+    const slice = series.length > MAX_POINTS
+      ? series.filter((_, i) => i % Math.ceil(series.length / MAX_POINTS) === 0).slice(0, MAX_POINTS)
+      : series;
+
+    return {
+      labels: slice.map((s) => s.label),
+      datasets: [{ data: slice.length ? slice.map((s) => s[key] ?? 0) : [0] }],
+    };
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={COLORS.accent} />
+        <Text style={styles.loadingText}>Loading analytics...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Ionicons name="warning-outline" size={48} color={COLORS.orange} style={{ marginBottom: 12 }} />
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryBtn} onPress={() => fetchAnalytics(selectedRange)}>
+          <Text style={styles.retryBtnText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const { summary = {}, anomalyBreakdown = {}, timeSeries = [] } = analytics ?? {};
+  const anomalyEntries = Object.entries(anomalyBreakdown);
+  const anomalyRate = parseFloat(summary.anomalyRate ?? 0);
+  const rateColor =
+    anomalyRate > 50 ? COLORS.red : anomalyRate > 20 ? COLORS.orange : COLORS.green;
 
   return (
-    <ScrollView style={styles.outerContainer}>
-      <View style={styles.innerContent}>
-        <Text style={styles.headerTitle}>Analytics</Text>
-        <Text style={styles.headerSub}>Monitoring your safety metrics over time</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-    
-        <View style={styles.row}>
-          <View style={styles.smallCard}>
-            <Text style={styles.cardLabel}>📈 Avg Temp</Text>
-            <Text style={styles.cardValue}>{data.readings.length > 0 ? data.readings[data.readings.length-1].temp : 0}°C</Text>
-          </View>
-          <View style={styles.smallCard}>
-            <Text style={styles.cardLabel}>📉 Gas Level</Text>
-            <Text style={styles.cardValue}>{data.readings.length > 0 ? data.readings[data.readings.length-1].gas : 0}</Text>
-          </View>
+      {/* Header */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerTitle}>Analytics</Text>
+          <Text style={styles.headerSub}>Safety metrics · {selectedRange === '24h' ? 'Last 24 hours' : selectedRange === '7d' ? 'Last 7 days' : 'Last 30 days'}</Text>
         </View>
-
-        
-        <View style={styles.bigCard}>
-          <Text style={styles.bigCardTitle}>Temperature History (°C)</Text>
-          <LineChart
-            data={{
-              labels: ["T1", "T2", "T3", "T4", "T5", "T6", "Now"],
-              datasets: [{ data: data.readings.map(r => r.temp || 20) }]
-            }}
-            width={chartWidth}
-            height={200}
-            chartConfig={chartConfig((opacity) => `rgba(76, 175, 80, ${opacity})`)}
-            bezier
-            style={styles.chartStyle}
-          />
-        </View>
-
-        
-        <View style={styles.bigCard}>
-          <Text style={styles.bigCardTitle}>Gas Levels (ppm)</Text>
-          <LineChart
-            data={{
-              labels: ["G1", "G2", "G3", "G4", "G5", "G6", "Now"],
-              datasets: [{ data: data.readings.map(r => r.gas || 0.01) }]
-            }}
-            width={chartWidth}
-            height={200}
-            chartConfig={chartConfig((opacity) => `rgba(33, 150, 243, ${opacity})`)}
-            bezier
-            style={styles.chartStyle}
-          />
-        </View>
-
-        
-        <View style={styles.bigCard}>
-          <Text style={styles.bigCardTitle}>Weekly Activity</Text>
-          <BarChart
-            data={{
-              labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-              datasets: [{ data: data.weekly }]
-            }}
-            width={chartWidth}
-            height={200}
-            chartConfig={chartConfig((opacity) => `rgba(255, 152, 0, ${opacity})`)}
-            style={styles.chartStyle}
-          />
-        </View>
-
-    
-        <View style={[styles.bigCard, {backgroundColor: '#f0f7ff', marginBottom: 60}]}>
-          <Text style={styles.bigCardTitle}>Weekly Summary</Text>
-          <View style={styles.summaryRow}>
-            <View style={styles.summaryItem}><Text style={styles.summaryValue}>{data.summary.alerts}</Text><Text style={styles.summaryLabel}>Total Alerts</Text></View>
-            <View style={styles.summaryItem}><Text style={styles.summaryValue}>{data.summary.critical}</Text><Text style={styles.summaryLabel}>Critical Events</Text></View>
-            <View style={styles.summaryItem}><Text style={styles.summaryValue}>{data.summary.uptime}</Text><Text style={styles.summaryLabel}>Uptime</Text></View>
-            <View style={[styles.summaryItem, {borderRightWidth:0}]}><Text style={styles.summaryValue}>{data.summary.devices}</Text><Text style={styles.summaryLabel}>Active Devices</Text></View>
-          </View>
+        <View style={styles.liveIndicator}>
+          <View style={styles.liveDot} />
+          <Text style={styles.liveText}>Live</Text>
         </View>
       </View>
+
+      {/* Range Selector */}
+      <View style={styles.rangeRow}>
+        {RANGES.map((r) => (
+          <TouchableOpacity
+            key={r}
+            style={[styles.rangeBtn, selectedRange === r && styles.rangeBtnActive]}
+            onPress={() => setSelectedRange(r)}
+          >
+            <Text style={[styles.rangeBtnText, selectedRange === r && styles.rangeBtnTextActive]}>
+              {r}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Stat Cards */}
+      <Animated.View style={[styles.statsGrid, { opacity: fadeAnim }]}>
+        <StatCard label="Total Alerts"  value={summary.totalAnomalies ?? 0} color={COLORS.red}    iconName="notifications-outline"   fadeAnim={fadeAnim} />
+        <StatCard label="Devices"       value={summary.activeDevices ?? 0}  color={COLORS.accent}  iconName="hardware-chip-outline"    fadeAnim={fadeAnim} />
+        <StatCard label="Anomaly Rate"  value={`${anomalyRate}%`}           color={rateColor}      iconName="stats-chart-outline"      fadeAnim={fadeAnim} />
+        <StatCard label="Readings"      value={summary.totalReadings ?? 0}  color={COLORS.purple}  iconName="document-text-outline"    fadeAnim={fadeAnim} />
+      </Animated.View>
+
+      {/* Sensor Averages */}
+      <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+        <SectionHeader title="Sensor Averages" iconName="pulse-outline" iconColor={COLORS.accent} />
+        <View style={styles.sensorRow}>
+          <View style={styles.sensorItem}>
+            <Text style={styles.sensorVal}>{summary.avgTemp ?? '--'}°C</Text>
+            <Text style={styles.sensorLbl}>Temperature</Text>
+          </View>
+          <View style={[styles.sensorItem, styles.sensorDivider]}>
+            <Text style={styles.sensorVal}>{summary.avgGas ?? '--'}</Text>
+            <Text style={styles.sensorLbl}>Gas (ppm)</Text>
+          </View>
+          <View style={[styles.sensorItem, styles.sensorDivider]}>
+            <Text style={styles.sensorVal}>{summary.avgSmoke ?? '--'}</Text>
+            <Text style={styles.sensorLbl}>Smoke</Text>
+          </View>
+          <View style={[styles.sensorItem, styles.sensorDivider]}>
+            <Text style={styles.sensorVal}>{summary.avgPower ?? '--'}W</Text>
+            <Text style={styles.sensorLbl}>Power</Text>
+          </View>
+        </View>
+      </Animated.View>
+
+      {/* Temperature Chart */}
+      {timeSeries.length > 0 && (
+        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+          <SectionHeader title="Temperature" subtitle="°C over time" iconName="thermometer-outline" iconColor={COLORS.accent} />
+          <LineChart
+            data={buildChartData('avgTemp', 'Temp')}
+            width={chartWidth}
+            height={180}
+            chartConfig={chartConfig((op) => `rgba(59, 130, 246, ${op})`)}
+            bezier
+            style={styles.chart}
+            withInnerLines={true}
+            withOuterLines={false}
+          />
+        </Animated.View>
+      )}
+
+      {/* Gas Chart */}
+      {timeSeries.length > 0 && (
+        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+          <SectionHeader title="Gas Levels" subtitle="ppm over time" iconName="cloud-outline" iconColor={COLORS.red} />
+          <LineChart
+            data={buildChartData('avgGas', 'Gas')}
+            width={chartWidth}
+            height={180}
+            chartConfig={chartConfig((op) => `rgba(239, 68, 68, ${op})`)}
+            bezier
+            style={styles.chart}
+            withInnerLines={true}
+            withOuterLines={false}
+          />
+        </Animated.View>
+      )}
+
+      {/* Anomaly Activity (Bar) */}
+      {timeSeries.length > 0 && (
+        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+          <SectionHeader title="Anomaly Activity" subtitle="events over time" iconName="bar-chart-outline" iconColor={COLORS.orange} />
+          <BarChart
+            data={buildChartData('anomalies', 'Anomalies')}
+            width={chartWidth}
+            height={180}
+            chartConfig={chartConfig((op) => `rgba(245, 158, 11, ${op})`)}
+            style={styles.chart}
+            withInnerLines={true}
+            showValuesOnTopOfBars
+          />
+        </Animated.View>
+      )}
+
+      {/* Anomaly Breakdown */}
+      {anomalyEntries.length > 0 && (
+        <Animated.View style={[styles.card, { opacity: fadeAnim }]}>
+          <SectionHeader title="Anomaly Breakdown" subtitle={`${anomalyEntries.length} types detected`} iconName="warning-outline" iconColor={COLORS.orange} />
+          <View style={styles.anomalyGrid}>
+            {anomalyEntries.map(([type, count]) => (
+              <AnomalyBadge key={type} type={type} count={count} />
+            ))}
+          </View>
+        </Animated.View>
+      )}
+
+      {/* Summary Footer */}
+      <Animated.View style={[styles.summaryCard, { opacity: fadeAnim }]}>
+        <View style={styles.summaryRow}>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryVal}>{summary.normalReadings ?? 0}</Text>
+            <Text style={styles.summaryLbl}>Normal</Text>
+          </View>
+          <View style={[styles.summaryItem, styles.sensorDivider]}>
+            <Text style={[styles.summaryVal, { color: COLORS.red }]}>{summary.totalAnomalies ?? 0}</Text>
+            <Text style={styles.summaryLbl}>Anomalies</Text>
+          </View>
+          <View style={[styles.summaryItem, styles.sensorDivider]}>
+            <Text style={[styles.summaryVal, { color: rateColor }]}>{anomalyRate}%</Text>
+            <Text style={styles.summaryLbl}>Rate</Text>
+          </View>
+        </View>
+      </Animated.View>
+
+      <View style={{ height: 60 }} />
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
-  outerContainer: { flex: 1, backgroundColor: '#f8f9fa' },
-  innerContent: { width: '100%', padding: 20 },
-  headerTitle: { fontSize: 26, fontWeight: 'bold', color: '#1a1a1a' },
-  headerSub: { fontSize: 14, color: '#666', marginBottom: 20 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  smallCard: { backgroundColor: '#fff', width: '48%', padding: 20, borderRadius: 15, elevation: 2 },
-  cardLabel: { fontSize: 12, color: '#888' },
-  cardValue: { fontSize: 22, fontWeight: 'bold' },
-  bigCard: { backgroundColor: '#fff', padding: 20, borderRadius: 15, marginBottom: 20, elevation: 2, alignItems: 'center' },
-  bigCardTitle: { fontSize: 16, fontWeight: 'bold', color: '#333', alignSelf: 'flex-start' },
-  chartStyle: { marginTop: 15, borderRadius: 15 },
-  summaryRow: { flexDirection: 'row', width: '100%', marginTop: 20 },
-  summaryItem: { flex: 1, alignItems: 'center', borderRightWidth: 1, borderRightColor: '#d1e3f8' },
-  summaryValue: { fontSize: 20, fontWeight: 'bold', color: '#001d3d' },
-  summaryLabel: { fontSize: 11, color: '#555', marginTop: 5 }
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
+  },
+  content: {
+    padding: 16,
+  },
+  centered: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+  },
+  loadingText: {
+    marginTop: 12,
+    color: COLORS.textSecondary,
+    fontSize: 14,
+  },
+  errorText: {
+    color: COLORS.textSecondary,
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryBtn: {
+    backgroundColor: COLORS.accent,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryBtnText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+    marginTop: 8,
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    letterSpacing: -0.5,
+  },
+  headerSub: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  liveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0fdf4',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    marginTop: 4,
+  },
+  liveDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.green,
+    marginRight: 5,
+  },
+  liveText: {
+    fontSize: 11,
+    color: COLORS.green,
+    fontWeight: '600',
+  },
+
+  // Range selector
+  rangeRow: {
+    flexDirection: 'row',
+    backgroundColor: '#f1f3f8',
+    borderRadius: 10,
+    padding: 3,
+    marginBottom: 16,
+  },
+  rangeBtn: {
+    flex: 1,
+    paddingVertical: 7,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  rangeBtnActive: {
+    backgroundColor: COLORS.surface,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  rangeBtnText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  rangeBtnTextActive: {
+    color: COLORS.textPrimary,
+    fontWeight: '600',
+  },
+
+  // Stats grid
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 16,
+  },
+  statCard: {
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    padding: 14,
+    width: '47.5%',
+    alignItems: 'flex-start',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  statIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+
+  // Card
+  card: {
+    backgroundColor: COLORS.card,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  sectionHeader: {
+    marginBottom: 14,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+  chart: {
+    borderRadius: 10,
+    marginLeft: -16,
+  },
+
+  // Sensor averages
+  sensorRow: {
+    flexDirection: 'row',
+  },
+  sensorItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  sensorDivider: {
+    borderLeftWidth: 1,
+    borderLeftColor: COLORS.border,
+  },
+  sensorVal: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  sensorLbl: {
+    fontSize: 10,
+    color: COLORS.textMuted,
+    marginTop: 3,
+  },
+
+  // Anomaly breakdown
+  anomalyGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  anomalyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+  },
+  anomalyDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  anomalyType: {
+    fontSize: 12,
+    fontWeight: '500',
+    textTransform: 'capitalize',
+  },
+  anomalyCount: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  // Summary footer card
+  summaryCard: {
+    backgroundColor: '#f8faff',
+    borderWidth: 1,
+    borderColor: '#dbeafe',
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 16,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+  },
+  summaryItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  summaryVal: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+  },
+  summaryLbl: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: 3,
+  },
 });
 
-export default AnalyticsScreen;
+export default Analytics;

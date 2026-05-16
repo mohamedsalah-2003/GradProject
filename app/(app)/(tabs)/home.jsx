@@ -1,46 +1,132 @@
+﻿import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+  Animated,
+  RefreshControl,
+  View,
 } from "react-native";
+
+import HeroSection from "../../../components/Home/HeroSection";
+import SensorsSection from "../../../components/Home/SensorsSection";
+import QuickActionsSection from "../../../components/Home/QuickActionsSection";
+import RecentActivitySection from "../../../components/Home/RecentActivitySection";
+
+import { C } from "../../../constants/colors";
 import { useAuth } from "../../../context/AuthContext";
-import HeroSection from "./../../../components/Home/HeroSection";
-import QuickActionsSection from "./../../../components/Home/QuickActionsSection";
-import RecentActivitySection from "./../../../components/Home/RecentActivitySection";
-import SensorsSection from "./../../../components/Home/SensorsSection";
+import { getDashboard } from "../../../services/home.service";
 
-export default function Home() {
-  const { user, isAuthReady } = useAuth();
 
-  if (!isAuthReady) return null;
+const Home = () => {
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+const { user } = useAuth();
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+const fetchDashboard = useCallback(
+  async (silent = false) => {
+    if (!silent) {
+      setLoading(true);
+      setError(null);
+    }
+
+    try {
+      const data = await getDashboard();
+console.log(data);
+
+      setDashboard(data);
+
+      fadeAnim.setValue(0);
+
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+
+    } catch (e) {
+      console.log(e);
+
+      setError("Could not load dashboard.");
+
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  },
+  [fadeAnim]
+);
+
+  useEffect(() => {
+    
+    fetchDashboard();
+
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchDashboard(true);
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={C.greenDark} />
+      </View>
+    );
+  }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F3F4F6" />
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={C.greenDark}
+        />
+      }
+    >
+      <HeroSection
+        user={user}
+        systemStatus={dashboard?.systemStatus}
+      />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <HeroSection name={user?.fullname || "User"} />
-        <SensorsSection />
+      <Animated.View style={{ opacity: fadeAnim }}>
+        <SensorsSection sensors={dashboard?.sensors} />
+
         <QuickActionsSection />
-        <RecentActivitySection />
-      </ScrollView>
-    </SafeAreaView>
+
+        <RecentActivitySection
+          activities={dashboard?.recentActivity}
+        />
+      </Animated.View>
+    </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: StatusBar.currentHeight || 0,
     flex: 1,
-    backgroundColor: "#F3F4F6",
+    backgroundColor: C.bg,
   },
-  scrollContent: {
-    paddingHorizontal: 16,
-    // paddingTop: 16,
-    paddingBottom: 80,
+
+  content: {
+    paddingBottom: 20,
+  },
+
+  centered: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: C.bg,
   },
 });
+
+export default Home;
