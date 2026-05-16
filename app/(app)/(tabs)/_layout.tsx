@@ -1,6 +1,6 @@
-import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, Text, StyleSheet, Platform } from "react-native";
+import { Tabs } from "expo-router";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import { useAlertsStore } from "../../store/alertsStore";
 function TabIcon({
   focused,
@@ -98,14 +98,14 @@ export default function TabsLayout() {
 
 
       <Tabs.Screen
-        name="devices"
+        name="homes"
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon
               focused={focused}
-              icon="hardware-chip-outline"
-              iconFocused="hardware-chip"
-              label="Devices"
+              icon="home-outline"
+              iconFocused="home"
+              label="Homes"
               badgeCount={undefined}
             />
           ),
