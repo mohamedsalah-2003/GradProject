@@ -1,105 +1,153 @@
-import { Ionicons } from "@expo/vector-icons";
+﻿import React from "react";
 import { StyleSheet, Text, View } from "react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
-export default function HeroSection({ name }) {
 
-  name = name ? name.split(" ").filter(Boolean).map(
-    (word) =>
-      word.charAt(0).toUpperCase() +
-      word.slice(1).toLowerCase()
-  ).join(" ") : "User";
-  const initials = (name || "User").split(" ").filter(Boolean).slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join("");
+import { C } from "../../constants/colors";
 
+const HeroSection = ({ user, systemStatus }) => {
+  const userName = (user?.fullname || "John Anderson")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+
+  const initials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const isAlert = systemStatus === "alert";
+  const isWarning = systemStatus === "warning";
+
+  const statusBg = isAlert
+    ? C.red
+    : isWarning
+    ? "#d97706"
+    : C.greenHeader;
 
   return (
-    <View style={styles.heroContainer}>
-      <View style={styles.heroInner}>
+    <View style={[styles.header, { backgroundColor: statusBg }]}>
+      <View style={styles.headerTop}>
         <View>
           <Text style={styles.welcomeText}>Welcome back,</Text>
-          <Text style={styles.userName}>{name}</Text>
+          <Text style={styles.userName}>{userName}</Text>
         </View>
-        <View style={styles.avatarCircle}>
-          <Text style={{ color: "#fff", fontWeight: "700" }}>{initials}</Text>
+
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{initials}</Text>
         </View>
       </View>
 
-      <View style={styles.heroCard}>
-        <View style={styles.heroCardInner}>
-          <View style={styles.heroCardIcon}>
-            <Ionicons name="shield-checkmark" size={20} color="#10B981" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.heroCardTitle}>All Systems Safe</Text>
-            <Text style={styles.heroCardSubtitle}>Your property is secure</Text>
-          </View>
+      <View style={styles.statusBanner}>
+        <View style={styles.statusIconWrap}>
+          <Ionicons
+            name={
+              isAlert
+                ? "warning-outline"
+                : isWarning
+                ? "alert-circle-outline"
+                : "shield-checkmark-outline"
+            }
+            size={22}
+            color={C.white}
+          />
+        </View>
+
+        <View>
+          <Text style={styles.statusTitle}>
+            {isAlert
+              ? "Anomaly Detected"
+              : isWarning
+              ? "Attention Required"
+              : "All Systems Safe"}
+          </Text>
+
+          <Text style={styles.statusSub}>
+            {isAlert
+              ? "Check recent activity below"
+              : isWarning
+              ? "Medium severity event detected"
+              : "Your property is secure"}
+          </Text>
         </View>
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  heroContainer: {
-    backgroundColor: "#10B981",
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    paddingVertical: 20,
+  header: {
+    paddingTop: 52,
+    paddingBottom: 28,
     paddingHorizontal: 20,
-    marginBottom: 18,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    marginBottom: 20,
   },
-  heroInner: {
+
+  headerTop: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+    alignItems: "flex-start",
+    marginBottom: 20,
   },
+
   welcomeText: {
-    color: "rgba(255,255,255,0.9)",
-    fontSize: 16,
-    marginBottom: 6,
+    fontSize: 13,
+    color: "rgba(255,255,255,0.85)",
   },
+
   userName: {
-    color: "#fff",
-    fontSize: 28,
-    fontWeight: "800",
-  },
-  avatarCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  heroCard: {
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 8,
-  },
-  heroCardInner: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  heroCardIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  heroCardTitle: {
-    color: "#fff",
-    fontSize: 18,
+    fontSize: 22,
+    color: C.white,
     fontWeight: "700",
   },
-  heroCardSubtitle: {
-    color: "rgba(255,255,255,0.9)",
-    fontSize: 14,
-    marginTop: 4,
+
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.25)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  avatarText: {
+    color: C.white,
+    fontWeight: "700",
+  },
+
+  statusBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.18)",
+    borderRadius: 14,
+    padding: 14,
+    gap: 12,
+  },
+
+  statusIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.25)",
+  },
+
+  statusTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: C.white,
+  },
+
+  statusSub: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.8)",
   },
 });
+
+export default HeroSection;
