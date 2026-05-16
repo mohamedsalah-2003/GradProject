@@ -4,7 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import IconThemeSync from "../components/IconThemeSync";
 import { toastConfig } from "../utils/toastConfig";
-import SocketListener from "../context/SocketListener";
+import SocketListener from "../context/socketListener";
 
 export default function Layout() {
   return (
