@@ -1,6 +1,7 @@
 import axios from "axios";
 import { BASE_URL } from "../config/env";
 import { storage } from "./../utils/storage";
+import { router } from "expo-router";
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -28,6 +29,7 @@ api.interceptors.response.use(
             // 1) logout user
             // 2) refresh token flow
             // 3) redirect to login
+            router.push("/login"); // Redirect to login page
         }
 
         return Promise.reject(error);

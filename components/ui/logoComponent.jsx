@@ -4,7 +4,7 @@ import { StyleSheet } from "react-native";
 export function LogoComponent() {
 
     return (<Image
-        source={require("./../../assets/images/logo.png")}
+        source={require("../../assets/images/logo.png")}
         style={styles.logo}
         resizeMode="contain"
     />

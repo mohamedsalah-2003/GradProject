@@ -138,6 +138,7 @@ export default function Alerts() {
               }
             : alert
         )
+        
       );
     } catch (error) {
       console.error("Failed to mark alert as read:", error);
