@@ -65,20 +65,20 @@ export default function TabsLayout() {
         tabBarItemStyle: styles.tabBarItem,
       }}
     >
-      <Tabs.Screen
-        name="home"
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon
-              focused={focused}
-              icon="home-outline"
-              iconFocused="home"
-              label="Home"
-              badgeCount={undefined}
-            />
-          ),
-        }}
+   <Tabs.Screen
+  name="dashboard"
+  options={{
+    tabBarIcon: ({ focused }) => (
+      <TabIcon
+        focused={focused}
+        icon="speedometer-outline"
+        iconFocused="speedometer"
+        label="Dashboard"
+        badgeCount={undefined}
       />
+    ),
+  }}
+/>
 
       <Tabs.Screen
         name="alerts"
