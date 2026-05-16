@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useAlertsStore } from "../app/store/alertsStore";
+import { connectSocket, disconnectSocket } from "../services/socket";
 import { storage } from "../utils/storage";
 
 type User = {
@@ -32,12 +33,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const init = async () => {
       try {
         const storedUser = await storage.get("user");
+        const storedAccessToken = await storage.get("accesstoken");
+
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
           if (typeof parsedUser.unreadAlerts === "number") {
             setUnreadCount(parsedUser.unreadAlerts);
           }
+        }
+
+        if (storedAccessToken) {
+          connectSocket(storedAccessToken);
         }
       } catch (e) {
         // ignore
@@ -50,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [setUnreadCount]);
 
   const logout = async () => {
+    await disconnectSocket();
     await storage.remove("user");
     await storage.remove("accesstoken");
     await storage.remove("refreshtoken");
