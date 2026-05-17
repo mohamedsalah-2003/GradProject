@@ -76,7 +76,7 @@ export default function LoginForm() {
         await storage.set("user", JSON.stringify(res.user));
       }
 
-      router.replace("/(app)/(tabs)/home");
+      router.replace("/(app)/(tabs)/dashboard");
 
     } catch (error) {
   
