@@ -8,6 +8,7 @@ export interface AlertItem {
   time: string;
   unread?: boolean;
   deviceName?: string;
+  deviceId?: string;
   location?: string;
   homeName?: string;
   anomalyType?: string;

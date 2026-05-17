@@ -231,7 +231,7 @@ export default function Alerts() {
         ]}
       >
         <View style={styles.headerSection}>
-          <AlertsHeader unreadCount={unreadCount} />
+          <AlertsHeader unreadCount={(unreadCount>0?unreadCount:0)} />
 
           <Text style={styles.summaryText}>
             {count} active alert

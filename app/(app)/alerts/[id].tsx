@@ -57,6 +57,7 @@ export default function AlertDetails() {
           time: new Date(alertData.createdAt).toLocaleString(),
           unread: !alertData.isRead,
           deviceName: alertData.deviceId?.name ?? "Unknown device",
+          deviceId: alertData.deviceId?._id ?? "",
           location:
             alertData.deviceId?.location ??
             alertData.homeId?.name ??
@@ -221,7 +222,7 @@ export default function AlertDetails() {
         </View>
 
         <TouchableOpacity
-          onPress={() => router.push("/(app)/(tabs)/devices")}
+          onPress={() => router.push(`/devices/${alert.deviceId}`)}
           style={styles.primaryButton}
           activeOpacity={0.85}
         >
