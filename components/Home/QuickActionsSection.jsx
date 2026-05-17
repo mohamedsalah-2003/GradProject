@@ -1,4 +1,5 @@
-﻿import React from "react";
+﻿import { router } from "expo-router";
+import React from "react";
 import {
   View,
   Text,
@@ -8,7 +9,7 @@ import {
 
 import Ionicons from "react-native-vector-icons/Ionicons";
 
-const QuickActionsSection = ({ navigation }) => {
+const QuickActionsSection = ({  }) => {
   return (
     <>
       <Text style={styles.title}>Quick Actions</Text>
@@ -30,7 +31,7 @@ const QuickActionsSection = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.btn}
-          onPress={() => navigation.navigate("Devices")}
+          onPress={() => router.push("/devices")}
         >
           <Ionicons
             name="hardware-chip-outline"
