@@ -11,7 +11,8 @@ import {
   View,
 } from "react-native";
 
-import DeleteHomeModal from "@/components/delete-home-modal";
+import AddHomeModal from "@/components/Homes/add-home-modal";
+import DeleteHomeModal from "@/components/Homes/delete-home-modal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -25,6 +26,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [tokenError, setTokenError] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ visible: false, homeId: null, homeName: null })
+  const [addModalVisible, setAddModalVisible] = useState(false);
 
   const background = useThemeColor({}, "background");
   const text = useThemeColor({}, "text");
@@ -74,6 +76,10 @@ export default function Home() {
     setHomes((prev) => prev.filter((h) => h._id !== deleteModal.homeId));
   };
 
+  const handleAddHomeSuccess = (newHome) => {
+    setHomes((prev) => [newHome, ...prev]);
+  };
+
   const renderItem = ({ item }) => {
     return (
       <Pressable
@@ -120,6 +126,13 @@ export default function Home() {
 
   return (
     <ThemedView style={[styles.container, { backgroundColor: background }]}>
+      {/* Add Home Modal */}
+      <AddHomeModal
+        visible={addModalVisible}
+        onClose={() => setAddModalVisible(false)}
+        onSuccess={handleAddHomeSuccess}
+      />
+
       {/* Delete Home Modal */}
       <DeleteHomeModal
         visible={deleteModal.visible}
@@ -141,8 +154,8 @@ export default function Home() {
         </View>
       )}
 
-      {/* Header */}
-      <View style={styles.headerRow}>
+      {/* Header with Add Button */}
+      <View style={[styles.headerRow, { paddingBottom: 12 }]}>
         <View>
           <ThemedText style={[styles.h1, { color: text }]}>
             Homes
@@ -151,6 +164,12 @@ export default function Home() {
             {homes.length} total
           </ThemedText>
         </View>
+        <TouchableOpacity
+          style={[styles.addButton, { backgroundColor: tint }]}
+          onPress={() => setAddModalVisible(true)}
+        >
+          <Ionicons name="add" size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
 
       {/* Search */}
@@ -202,6 +221,9 @@ const styles = StyleSheet.create({
 
   headerRow: {
     marginBottom: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
 
   h1: {
@@ -262,6 +284,14 @@ const styles = StyleSheet.create({
   deleteButton: {
     padding: 8,
     marginRight: -8,
+  },
+
+  addButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   footer: {
