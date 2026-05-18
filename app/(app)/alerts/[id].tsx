@@ -19,7 +19,7 @@ import {
 } from "../../../services/alert.service";
 
 import { AlertItem } from "../../Types/alert";
-
+import { useAlertsStore } from "../../store/alertsStore";
 export default function AlertDetails() {
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -89,6 +89,8 @@ export default function AlertDetails() {
       await markAlertAsResolved(id);
 
       setResolved(true);
+      useAlertsStore.getState().markAlertLocallyAsResolved(id);   // ← ده بس
+
     } catch (error) {
       console.error("Error resolving alert:", error);
     } finally {

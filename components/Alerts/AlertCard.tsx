@@ -21,6 +21,7 @@ interface Props {
 }
 export default function AlertCard({
   item,
+  
   onPress,
 }: Props) {
   const config = alertColors[item.type];

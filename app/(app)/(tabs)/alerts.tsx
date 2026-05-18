@@ -20,12 +20,8 @@ import Loader from "../../../components/ui/Loader";
 
 import { useAlertsStore } from "../../../app/store/alertsStore";
 import { useAuth } from "../../../context/AuthContext";
-import {
-  getUserAlerts,
-  markAlertAsRead,
-} from "../../../services/alert.service";
-
-import { AlertItem } from "../../Types/alert";
+import { getUserAlerts, markAlertAsRead } from "../../../services/alert.service";
+import { normalizeAlert } from "@/utils/mapAlert";
 
 export default function Alerts() {
   const router = useRouter();
@@ -45,16 +41,20 @@ export default function Alerts() {
   }, [isDesktop, isTablet]);
 
   const [selectedFilter, setSelectedFilter] = useState("All");
-  const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [tokenExpired, setTokenExpired] = useState(false);
   const [fetchError, setFetchError] = useState(false);
-
   const [count, setCount] = useState(0);
+
+  const alerts = useAlertsStore((state) => state.alerts);
   const unreadCount = useAlertsStore((state) => state.unreadCount);
+
+  const setAlerts = useAlertsStore((state) => state.setAlerts);
   const setUnreadCount = useAlertsStore((state) => state.setUnreadCount);
-  const markAlertRead = useAlertsStore((state) => state.markAsRead);
-  const decrementUnreadCount = useAlertsStore((state) => state.decrementUnreadCount);
+  const markAlertLocallyAsRead = useAlertsStore(
+    (state) => state.markAlertLocallyAsRead
+  );
+
   const fetchAlerts = useCallback(async () => {
     setLoading(true);
     setFetchError(false);
@@ -62,40 +62,15 @@ export default function Alerts() {
 
     try {
       const response = await getUserAlerts();
+
       setCount(response.count);
       setUnreadCount(response.unreadCount);
-      const apiAlerts = response.alerts.map((alert: any) => {
-        const alertType: "Critical" | "Warning" =
-          alert.severity === "critical" || alert.severity === "high"
-            ? "Critical"
-            : "Warning";
 
-        return {
-          id: alert._id,
-          title: "Anomaly Detected",
-          description: alert.message,
-          type: alertType,
-          time: new Intl.DateTimeFormat("en-US", {
-            dateStyle: "medium",
-            timeStyle: "short",
-          }).format(new Date(alert.createdAt)),
-          unread: !alert.isRead,
-          deviceName: alert.deviceId?.name ?? "Unknown device",
-          location:
-            alert.deviceId?.location ??
-            alert.homeId?.name ??
-            "Unknown location",
-          homeName: alert.homeId?.name ?? "",
-          anomalyType: alert.anomalyType ?? "Unknown",
-          isResolved: alert.isResolved ?? false,
-        };
-      });
+    const apiAlerts = response.alerts.map(normalizeAlert);
 
       setAlerts(apiAlerts);
     } catch (error: any) {
-      const status = error?.response?.status;
-
-      if (status === 401) {
+      if (error?.response?.status === 401) {
         setTokenExpired(true);
       } else {
         setFetchError(true);
@@ -110,38 +85,21 @@ export default function Alerts() {
   }, [fetchAlerts]);
 
   const filteredAlerts = useMemo(() => {
-    if (selectedFilter === "All") {
-      return alerts;
-    }
-
-    return alerts.filter((item) => item.type === selectedFilter);
-  }, [selectedFilter, alerts]);
-
-
-
-  const handleSignInAgain = async () => {
-    await logout();
-    router.replace("/(auth)/login");
-  };
+    if (selectedFilter === "All") return alerts;
+    return alerts.filter((a) => a.type === selectedFilter);
+  }, [alerts, selectedFilter]);
 
   const handleAlertPress = async (id: string) => {
     try {
-      await markAlertAsRead(id);
-      markAlertRead(id);
-      decrementUnreadCount();
-      setAlerts((prev) =>
-        prev.map((alert) =>
-          alert.id === id
-            ? {
-                ...alert,
-                unread: false,
-              }
-            : alert
-        )
-        
-      );
-    } catch (error) {
-      console.error("Failed to mark alert as read:", error);
+      const res = await markAlertAsRead(id);
+
+      markAlertLocallyAsRead(id);
+
+      if (typeof res.unreadAlerts === "number") {
+        setUnreadCount(res.unreadAlerts);
+      }
+    } catch (err) {
+      console.error(err);
     } finally {
       router.push({
         pathname: "/(app)/alerts/[id]",
@@ -150,71 +108,14 @@ export default function Alerts() {
     }
   };
 
-  const renderStatusScreen = (
-    title: string,
-    description: string,
-    actionLabel?: string,
-    action?: () => void
-  ) => (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.centered}>
-        <View
-          style={[
-            styles.statusCard,
-            {
-              maxWidth: 520,
-              width: "100%",
-              padding: isDesktop ? 36 : 28,
-            },
-          ]}
-        >
-          <Text style={styles.statusTitle}>{title}</Text>
-
-          <Text style={styles.statusSubtitle}>{description}</Text>
-
-          {action && actionLabel ? (
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={action}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.actionText}>{actionLabel}</Text>
-            </TouchableOpacity>
-          ) : null}
-        </View>
-      </View>
-    </SafeAreaView>
-  );
-
   if (loading) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centered}>
           <Loader color="#0891b2" />
-
-          <Text style={[styles.statusTitle, styles.loadText]}>
-            Loading your alerts...
-          </Text>
+          <Text style={styles.statusTitle}>Loading alerts...</Text>
         </View>
       </SafeAreaView>
-    );
-  }
-
-  if (tokenExpired) {
-    return renderStatusScreen(
-      "Session Expired",
-      "Your session has expired. Please sign in again to continue monitoring your alerts.",
-      "Sign In Again",
-      handleSignInAgain
-    );
-  }
-
-  if (fetchError) {
-    return renderStatusScreen(
-      "Unable to Load Alerts",
-      "Something went wrong while fetching alerts. Please try again.",
-      "Retry",
-      fetchAlerts
     );
   }
 
@@ -230,40 +131,23 @@ export default function Alerts() {
           },
         ]}
       >
-        <View style={styles.headerSection}>
-          <AlertsHeader unreadCount={(unreadCount>0?unreadCount:0)} />
+        <AlertsHeader unreadCount={unreadCount} />
 
-          <Text style={styles.summaryText}>
-            {count} active alert
-            {count === 1 ? "" : "s"}
-            {unreadCount > 0 ? ` · ${unreadCount} unread` : ""}
-          </Text>
-        </View>
+        <Text style={styles.summaryText}>
+          {count} alerts · {unreadCount} unread
+        </Text>
 
-        <AlertFilter
-          selected={selectedFilter}
-          onSelect={setSelectedFilter}
-        />
+        <AlertFilter selected={selectedFilter} onSelect={setSelectedFilter} />
 
         <FlatList
           data={filteredAlerts}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[
-            styles.listContent,
-            filteredAlerts.length === 0 && {
-              flexGrow: 1,
-              justifyContent: "center",
-            },
-          ]}
+          keyExtractor={(i) => i.id}
           ListEmptyComponent={<EmptyAlerts />}
           renderItem={({ item }) => (
-            <View style={styles.cardWrapper}>
-              <AlertCard
-                item={item}
-                onPress={() => handleAlertPress(item.id)}
-              />
-            </View>
+            <AlertCard
+              item={item}
+              onPress={() => handleAlertPress(item.id)}
+            />
           )}
         />
       </View>

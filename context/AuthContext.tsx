@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useAlertsStore } from "../app/store/alertsStore";
 import { connectSocket, disconnectSocket } from "../services/socket";
 import { storage } from "../utils/storage";
+import { useAlertsStore } from "../app/store/alertsStore";
 
 type User = {
   fullname: string;
@@ -24,54 +24,72 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-   const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
-
+  const unreadCount = useAlertsStore((s) => s.unreadCount);
+  const setAlerts = useAlertsStore((state) => state.setAlerts);
   const setUnreadCount = useAlertsStore((state) => state.setUnreadCount);
+  useEffect(() => {
+    if (!user) return;
 
+    const updatedUser = {
+      ...user,
+      unreadAlerts: unreadCount,
+    };
+
+    setUser(updatedUser);
+
+    storage.set("user", JSON.stringify(updatedUser));
+  }, [unreadCount]);
   useEffect(() => {
     const init = async () => {
       try {
         const storedUser = await storage.get("user");
-        const storedAccessToken = await storage.get("accesstoken");
+        const storedToken = await storage.get("accesstoken");
 
         if (storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
-          if (typeof parsedUser.unreadAlerts === "number") {
-            setUnreadCount(parsedUser.unreadAlerts);
-          }
+
+          // optional initial hydration فقط
+          setUnreadCount(parsedUser.unreadAlerts ?? 0);
         }
 
-        if (storedAccessToken) {
-          connectSocket(storedAccessToken);
+        if (storedToken) {
+          connectSocket(storedToken);
         }
-      } catch (e) {
-        // ignore
       } finally {
         setIsAuthReady(true);
       }
     };
 
     init();
-  }, [setUnreadCount]);
+  }, []);
 
   const logout = async () => {
     await disconnectSocket();
+
     await storage.remove("user");
     await storage.remove("accesstoken");
     await storage.remove("refreshtoken");
+
     setUser(null);
+
+    // reset alerts state بالكامل
+    setAlerts([]);
+    setUnreadCount(0);
   };
 
-  const value = useMemo(() => ({ user, setUser, isAuthReady, logout }), [user, isAuthReady]);
+  const value = useMemo(
+    () => ({ user, setUser, isAuthReady, logout }),
+    [user, isAuthReady]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export  function useAuth() {
+export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
-  
   return ctx;
 }
