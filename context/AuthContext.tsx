@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useMemo, useState } from "
 import { connectSocket, disconnectSocket } from "../services/socket";
 import { storage } from "../utils/storage";
 import { useAlertsStore } from "../app/store/alertsStore";
-
+import { signoutRequest } from "@/services/auth.service";
 type User = {
   fullname: string;
   email: string;
@@ -29,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const unreadCount = useAlertsStore((s) => s.unreadCount);
   const setAlerts = useAlertsStore((state) => state.setAlerts);
   const setUnreadCount = useAlertsStore((state) => state.setUnreadCount);
+
   useEffect(() => {
     if (!user) return;
 
@@ -68,10 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     await disconnectSocket();
-
     await storage.remove("user");
     await storage.remove("accesstoken");
     await storage.remove("refreshtoken");
+
+    await signoutRequest();
 
     setUser(null);
 

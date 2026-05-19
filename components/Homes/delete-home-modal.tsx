@@ -26,10 +26,10 @@ export default function DeleteHomeModal({
   onClose,
   onSuccess,
 }: DeleteHomeModalProps) {
-  const background = useThemeColor({}, "background");
-  const text = useThemeColor({}, "text");
-  const muted = useThemeColor({}, "icon");
-  const border = useThemeColor({}, "border");
+  const background = "#ffffff";
+  const text = "#111111";
+  const muted = "#888888";
+  const border = "#e5e5e5";
 
   const [isLoading, setIsLoading] = useState(false);
   const isSubmittingRef = React.useRef(false);

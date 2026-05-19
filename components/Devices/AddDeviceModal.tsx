@@ -1,19 +1,19 @@
-import { useThemeColor } from "@/hooks/use-theme-color";
 import { addDevice } from "@/services/devices.service";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 interface AddDeviceModalProps {
@@ -29,14 +29,15 @@ export default function AddDeviceModal({
   onSuccess,
   homeId: initialHomeId,
 }: AddDeviceModalProps) {
-  const background = useThemeColor({}, "background");
-  const text = useThemeColor({}, "text");
-  const muted = useThemeColor({}, "icon");
-  const border = useThemeColor({}, "border");
-  const tint = useThemeColor({}, "tint");
+  // Hardcoded light mode — immune to system dark mode
+  const background = "#ffffff";
+  const text = "#111111";
+  const muted = "#888888";
+  const border = "#e5e5e5";
+  const tint = "#0590b3";
 
   const [formData, setFormData] = useState({
-    homeId: initialHomeId || "",
+    homeId: initialHomeId,
     name: "",
     location: "",
     isActive: true,
@@ -47,55 +48,35 @@ export default function AddDeviceModal({
     text: string;
     type: "success" | "error";
   } | null>(null);
-
   const [errors, setErrors] = useState<Record<string, string>>({});
   const isSubmittingRef = React.useRef(false);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.homeId.trim()) {
-      newErrors.homeId = "Home ID is required";
-    }
-    if (!formData.name.trim()) {
-      newErrors.name = "Device name is required";
-    }
-    if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
-    }
-
+    if (!initialHomeId) newErrors.homeId = "Home ID is required";
+    if (!formData.name.trim()) newErrors.name = "Device name is required";
+    if (!formData.location.trim()) newErrors.location = "Location is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleAddDevice = async () => {
-    // Prevent duplicate submissions
-    if (isSubmittingRef.current || isLoading) {
-      return;
-    }
-
-    if (!validateForm()) {
-      return;
-    }
+    if (isSubmittingRef.current || isLoading) return;
+    if (!validateForm()) return;
 
     try {
       isSubmittingRef.current = true;
       setIsLoading(true);
       setMessage(null);
 
-      const payload = {
-        homeId: formData.homeId.trim(),
+      await addDevice({
+        homeId: initialHomeId,
         name: formData.name.trim(),
         location: formData.location.trim(),
         isActive: formData.isActive,
-      };
-
-      await addDevice(payload);
-
-      setMessage({
-        text: "Device added successfully! ✅",
-        type: "success",
       });
+
+      setMessage({ text: "Device added successfully!", type: "success" });
 
       setTimeout(() => {
         resetForm();
@@ -114,12 +95,7 @@ export default function AddDeviceModal({
   };
 
   const resetForm = () => {
-    setFormData({
-      homeId: initialHomeId || "",
-      name: "",
-      location: "",
-      isActive: true,
-    });
+    setFormData({ homeId: initialHomeId || "", name: "", location: "", isActive: true });
     setErrors({});
     setMessage(null);
     isSubmittingRef.current = false;
@@ -135,45 +111,36 @@ export default function AddDeviceModal({
     placeholder: string,
     field: keyof typeof formData,
     multiline = false
-  ) => {
-    return (
-      <View style={styles.fieldContainer}>
-        <Text style={[styles.label, { color: text }]}>{label}</Text>
-        <TextInput
-          style={[
-            styles.input,
-            {
-              borderColor: errors[field] ? "#ff3b30" : border,
-              color: text,
-              backgroundColor:
-                Platform.OS === "web"
-                  ? "rgba(255,255,255,0.05)"
-                  : "transparent",
-            },
-            multiline && { height: 100, textAlignVertical: "top" },
-          ]}
-          placeholder={placeholder}
-          placeholderTextColor={muted}
-          value={formData[field] as string}
-          onChangeText={(value) => {
-            setFormData((prev) => ({ ...prev, [field]: value }));
-            if (errors[field]) {
-              setErrors((prev) => {
-                const newErrors = { ...prev };
-                delete newErrors[field];
-                return newErrors;
-              });
-            }
-          }}
-          multiline={multiline}
-          editable={!isLoading}
-        />
-        {errors[field] && (
-          <Text style={styles.errorText}>{errors[field]}</Text>
-        )}
-      </View>
-    );
-  };
+  ) => (
+    <View style={styles.fieldContainer}>
+      <Text style={[styles.label, { color: text }]}>{label}</Text>
+      <TextInput
+        style={[
+          styles.input,
+          { borderColor: errors[field] ? "#ff3b30" : border, color: text },
+          multiline && { height: 100, textAlignVertical: "top" },
+        ]}
+        placeholder={placeholder}
+        placeholderTextColor={muted}
+        value={formData[field] as string}
+        onChangeText={(value) => {
+          setFormData((prev) => ({ ...prev, [field]: value }));
+          if (errors[field]) {
+            setErrors((prev) => {
+              const next = { ...prev };
+              delete next[field];
+              return next;
+            });
+          }
+        }}
+        multiline={multiline}
+        editable={!isLoading}
+      />
+      {errors[field] && (
+        <Text style={styles.errorText}>{errors[field]}</Text>
+      )}
+    </View>
+  );
 
   return (
     <Modal
@@ -186,34 +153,23 @@ export default function AddDeviceModal({
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
-        <View
-          style={[
-            styles.overlay,
-            { backgroundColor: "rgba(0,0,0,0.5)" },
-          ]}
-        >
-          <View
-            style={[
-              styles.modalContainer,
-              { backgroundColor: background },
-            ]}
-          >
+        <View style={styles.overlay}>
+          <View style={[styles.sheet, { backgroundColor: background }]}>
+            {/* Drag handle */}
+            <View style={styles.handle} />
+
             {/* Header */}
-            <View
-              style={[
-                styles.header,
-                { borderBottomColor: border },
-              ]}
-            >
-              <Text style={[styles.title, { color: text }]}>
-                Add New Device
-              </Text>
+            <View style={[styles.header, { borderBottomColor: border }]}>
+              <View style={[styles.headerIcon, { backgroundColor: `${tint}18` }]}>
+                <Ionicons name="hardware-chip-outline" size={18} color={tint} />
+              </View>
+              <Text style={[styles.title, { color: text }]}>Add New Device</Text>
               <Pressable
                 onPress={handleClose}
                 disabled={isLoading}
-                style={styles.closeButton}
+                style={[styles.closeBtn, { backgroundColor: "#f0f0f0" }]}
               >
-                <Ionicons name="close" size={24} color={text} />
+                <Ionicons name="close" size={18} color={text} />
               </Pressable>
             </View>
 
@@ -227,35 +183,19 @@ export default function AddDeviceModal({
               {message && (
                 <View
                   style={[
-                    styles.messageContainer,
-                    {
-                      backgroundColor:
-                        message.type === "success"
-                          ? "#1DB95420"
-                          : "#ff3b3020",
-                    },
+                    styles.messageBanner,
+                    { backgroundColor: message.type === "success" ? "#22c55e18" : "#ff3b3018" },
                   ]}
                 >
                   <Ionicons
-                    name={
-                      message.type === "success"
-                        ? "checkmark-circle"
-                        : "alert-circle"
-                    }
-                    size={18}
-                    color={
-                      message.type === "success" ? "#1DB954" : "#ff3b30"
-                    }
+                    name={message.type === "success" ? "checkmark-circle" : "alert-circle"}
+                    size={16}
+                    color={message.type === "success" ? "#22c55e" : "#ff3b30"}
                   />
                   <Text
                     style={[
                       styles.messageText,
-                      {
-                        color:
-                          message.type === "success"
-                            ? "#1DB954"
-                            : "#ff3b30",
-                      },
+                      { color: message.type === "success" ? "#22c55e" : "#ff3b30" },
                     ]}
                   >
                     {message.text}
@@ -263,60 +203,30 @@ export default function AddDeviceModal({
                 </View>
               )}
 
-              {/* Device Name */}
-              {renderInput(
-                "Device Name",
-                "e.g., Living Room Sensor",
-                "name"
-              )}
+              {renderInput("Device Name", "e.g., Living Room Sensor", "name")}
+              {renderInput("Location", "e.g., Living Room", "location")}
 
-              {/* Location */}
-              {renderInput(
-                "Location",
-                "e.g., Living Room",
-                "location"
-              )}
-
-              {/* Home ID */}
-              {renderInput(
-                "Home ID",
-                "e.g., 6a03a41ca4b1db919bada59a",
-                "homeId"
-              )}
-
-              {/* Status */}
+              {/* Status toggle */}
               <View style={styles.fieldContainer}>
                 <Text style={[styles.label, { color: text }]}>Status</Text>
-                <View style={styles.statusToggle}>
+                <View style={[styles.toggleWrap, { backgroundColor: "#f5f5f5", borderColor: border }]}>
                   <TouchableOpacity
                     style={[
-                      styles.statusButton,
-                      {
-                        backgroundColor: formData.isActive
-                          ? tint
-                          : border,
-                      },
+                      styles.toggleOption,
+                      formData.isActive && { backgroundColor: tint },
                     ]}
-                    onPress={() =>
-                      !isLoading &&
-                      setFormData((prev) => ({
-                        ...prev,
-                        isActive: true,
-                      }))
-                    }
+                    onPress={() => !isLoading && setFormData((p) => ({ ...p, isActive: true }))}
                     disabled={isLoading}
                   >
                     <Ionicons
                       name="checkmark-circle"
-                      size={16}
+                      size={15}
                       color={formData.isActive ? "#fff" : muted}
                     />
                     <Text
                       style={[
-                        styles.statusButtonText,
-                        {
-                          color: formData.isActive ? "#fff" : text,
-                        },
+                        styles.toggleText,
+                        { color: formData.isActive ? "#fff" : muted },
                       ]}
                     >
                       Active
@@ -325,33 +235,21 @@ export default function AddDeviceModal({
 
                   <TouchableOpacity
                     style={[
-                      styles.statusButton,
-                      {
-                        backgroundColor: !formData.isActive
-                          ? "#ff3b30"
-                          : border,
-                      },
+                      styles.toggleOption,
+                      !formData.isActive && { backgroundColor: "#ff3b30" },
                     ]}
-                    onPress={() =>
-                      !isLoading &&
-                      setFormData((prev) => ({
-                        ...prev,
-                        isActive: false,
-                      }))
-                    }
+                    onPress={() => !isLoading && setFormData((p) => ({ ...p, isActive: false }))}
                     disabled={isLoading}
                   >
                     <Ionicons
                       name="close-circle"
-                      size={16}
+                      size={15}
                       color={!formData.isActive ? "#fff" : muted}
                     />
                     <Text
                       style={[
-                        styles.statusButtonText,
-                        {
-                          color: !formData.isActive ? "#fff" : text,
-                        },
+                        styles.toggleText,
+                        { color: !formData.isActive ? "#fff" : muted },
                       ]}
                     >
                       Inactive
@@ -362,28 +260,17 @@ export default function AddDeviceModal({
             </ScrollView>
 
             {/* Footer */}
-            <View
-              style={[
-                styles.footer,
-                { borderTopColor: border },
-              ]}
-            >
+            <View style={[styles.footer, { borderTopColor: border }]}>
               <TouchableOpacity
-                style={[styles.cancelButton, { borderColor: border }]}
+                style={[styles.cancelBtn, { borderColor: border }]}
                 onPress={handleClose}
                 disabled={isLoading}
               >
-                <Text style={[styles.cancelButtonText, { color: text }]}>
-                  Cancel
-                </Text>
+                <Text style={[styles.cancelText, { color: text }]}>Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[
-                  styles.addButton,
-                  { backgroundColor: tint },
-                  isLoading && styles.buttonDisabled,
-                ]}
+                style={[styles.submitBtn, { backgroundColor: tint }, isLoading && { opacity: 0.7 }]}
                 onPress={handleAddDevice}
                 disabled={isLoading}
               >
@@ -392,7 +279,7 @@ export default function AddDeviceModal({
                 ) : (
                   <>
                     <Ionicons name="add" size={18} color="#fff" />
-                    <Text style={styles.addButtonText}>Add Device</Text>
+                    <Text style={styles.submitText}>Add Device</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -408,142 +295,141 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.45)",
   },
-
-  modalContainer: {
+  sheet: {
     maxHeight: "90%",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
   },
-
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#d0d0d0",
+    alignSelf: "center",
+    marginTop: 10,
+    marginBottom: 4,
+  },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-  },
-
-  title: {
-    fontSize: 20,
-    fontWeight: "800",
-  },
-
-  closeButton: {
-    padding: 8,
-    marginRight: -8,
-  },
-
-  content: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    flex: 1,
-  },
-
-  fieldContainer: {
-    marginBottom: 18,
-  },
-
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-  },
-
-  errorText: {
-    color: "#ff3b30",
-    fontSize: 12,
-    marginTop: 6,
-    fontWeight: "500",
-  },
-
-  messageContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  headerIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 9,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: "700",
+    flex: 1,
+  },
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 18,
+  },
+  fieldContainer: {
+    marginBottom: 18,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 7,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 11,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
+    fontSize: 15,
+    backgroundColor: "#fafafa",
+  },
+  errorText: {
+    color: "#ff3b30",
+    fontSize: 12,
+    marginTop: 5,
+    fontWeight: "500",
+  },
+  messageBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+    paddingHorizontal: 13,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 11,
     marginBottom: 16,
   },
-
   messageText: {
     fontSize: 13,
     fontWeight: "600",
     flex: 1,
   },
-
-  statusToggle: {
+  toggleWrap: {
     flexDirection: "row",
-    gap: 10,
+    borderRadius: 11,
+    borderWidth: 1,
+    padding: 3,
+    gap: 3,
   },
-
-  statusButton: {
+  toggleOption: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 6,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingVertical: 9,
+    borderRadius: 9,
   },
-
-  statusButtonText: {
-    fontSize: 14,
+  toggleText: {
+    fontSize: 13,
     fontWeight: "600",
   },
-
   footer: {
     flexDirection: "row",
-    gap: 12,
+    gap: 10,
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderTopWidth: 1,
   },
-
-  cancelButton: {
+  cancelBtn: {
     flex: 1,
     borderWidth: 1,
     borderRadius: 12,
-    paddingVertical: 12,
+    paddingVertical: 13,
     justifyContent: "center",
     alignItems: "center",
   },
-
-  cancelButtonText: {
+  cancelText: {
     fontSize: 15,
     fontWeight: "600",
   },
-
-  addButton: {
-    flex: 1,
+  submitBtn: {
+    flex: 2,
     borderRadius: 12,
-    paddingVertical: 12,
+    paddingVertical: 13,
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
-    gap: 8,
+    gap: 7,
   },
-
-  addButtonText: {
+  submitText: {
     color: "#fff",
     fontSize: 15,
     fontWeight: "600",
-  },
-
-  buttonDisabled: {
-    opacity: 0.7,
   },
 });

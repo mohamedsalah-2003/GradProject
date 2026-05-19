@@ -15,7 +15,8 @@ const QuickActionsSection = ({  }) => {
       <Text style={styles.title}>Quick Actions</Text>
 
       <View style={styles.row}>
-        <TouchableOpacity style={styles.btn}>
+        <TouchableOpacity style={styles.btn}
+        onPress={() => router.push("/(app)/EmergencyContacts/EmergencyContactsScreen")}>
           <Ionicons name="call-outline" size={22} color="red" />
           <Text>Emergency</Text>
         </TouchableOpacity>
@@ -31,7 +32,7 @@ const QuickActionsSection = ({  }) => {
 
         <TouchableOpacity
           style={styles.btn}
-          onPress={() => router.push("/devices")}
+          onPress={() => router.push("/(app)/devices/devices") }
         >
           <Ionicons
             name="hardware-chip-outline"

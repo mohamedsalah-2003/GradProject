@@ -1,21 +1,24 @@
-import { useThemeColor } from "@/hooks/use-theme-color";
 import { createHome } from "@/services/homes.service";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-    ActivityIndicator,
-    Modal,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 interface AddHomeModalProps {
   visible: boolean;
   onClose: () => void;
-  onSuccess?: (newHome: any) => void;
+  onSuccess?: () => void;
 }
 
 export default function AddHomeModal({
@@ -23,84 +26,112 @@ export default function AddHomeModal({
   onClose,
   onSuccess,
 }: AddHomeModalProps) {
-  const background = useThemeColor({}, "background");
-  const text = useThemeColor({}, "text");
-  const muted = useThemeColor({}, "icon");
-  const border = useThemeColor({}, "border");
-  const tint = useThemeColor({}, "tint");
+  const background = "#ffffff";
+  const text = "#111111";
+  const muted = "#888888";
+  const border = "#e5e5e5";
+  const tint = "#0590b3";
 
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     location: "",
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "success" | "error";
+  } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const isSubmittingRef = React.useRef(false);
 
-  // Reset state when modal closes
-  useEffect(() => {
-    if (!visible) {
-      isSubmittingRef.current = false;
-      setIsLoading(false);
-      setFormData({
-        name: "",
-        location: "",
-      });
-      setErrors({});
-    }
-  }, [visible]);
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "Home name is required";
-    }
-    if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
-    }
-
+    if (!formData.name.trim()) newErrors.name = "Home name is required";
+    if (!formData.location.trim()) newErrors.location = "Location is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleCreate = async () => {
-    if (isSubmittingRef.current || isLoading) {
-      return;
-    }
-
-    if (!validateForm()) {
-      return;
-    }
+  const handleAddHome = async () => {
+    if (isSubmittingRef.current || isLoading) return;
+    if (!validateForm()) return;
 
     try {
       isSubmittingRef.current = true;
       setIsLoading(true);
+      setMessage(null);
 
-      const newHome = await createHome(formData);
+      await createHome({
+        name: formData.name.trim(),
+        location: formData.location.trim(),
+      });
+
+      setMessage({ text: "Home added successfully!", type: "success" });
 
       setTimeout(() => {
-        isSubmittingRef.current = false;
-        setIsLoading(false);
+        resetForm();
         onClose();
-        onSuccess?.(newHome);
-      }, 800);
+        onSuccess?.();
+      }, 1500);
     } catch (error: any) {
-      console.error("Create home error:", error);
-      isSubmittingRef.current = false;
-      setIsLoading(false);
-      setErrors({
-        submit: error?.response?.data?.message || "Failed to create home",
+      setMessage({
+        text: error?.response?.data?.message || "Failed to add home",
+        type: "error",
       });
+    } finally {
+      setIsLoading(false);
+      isSubmittingRef.current = false;
     }
+  };
+
+  const resetForm = () => {
+    setFormData({ name: "", location: "" });
+    setErrors({});
+    setMessage(null);
+    isSubmittingRef.current = false;
   };
 
   const handleClose = () => {
-    if (!isLoading) {
-      isSubmittingRef.current = false;
-      onClose();
-    }
+    resetForm();
+    onClose();
   };
+
+  const renderInput = (
+    label: string,
+    placeholder: string,
+    field: keyof typeof formData,
+    multiline = false
+  ) => (
+    <View style={styles.fieldContainer}>
+      <Text style={[styles.label, { color: text }]}>{label}</Text>
+      <TextInput
+        style={[
+          styles.input,
+          { borderColor: errors[field] ? "#ff3b30" : border, color: text },
+          multiline && { height: 100, textAlignVertical: "top" },
+        ]}
+        placeholder={placeholder}
+        placeholderTextColor={muted}
+        value={formData[field]}
+        onChangeText={(value) => {
+          setFormData((prev) => ({ ...prev, [field]: value }));
+          if (errors[field]) {
+            setErrors((prev) => {
+              const next = { ...prev };
+              delete next[field];
+              return next;
+            });
+          }
+        }}
+        multiline={multiline}
+        editable={!isLoading}
+      />
+      {errors[field] && (
+        <Text style={styles.errorText}>{errors[field]}</Text>
+      )}
+    </View>
+  );
 
   return (
     <Modal
@@ -109,110 +140,107 @@ export default function AddHomeModal({
       animationType="slide"
       onRequestClose={handleClose}
     >
-      <View style={styles.overlay}>
-        <View style={[styles.container, { backgroundColor: background }]}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={[styles.title, { color: text }]}>Add New Home</Text>
-            <TouchableOpacity onPress={handleClose} disabled={isLoading}>
-              <Ionicons name="close" size={24} color={text} />
-            </TouchableOpacity>
-          </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <View style={styles.overlay}>
+          <View style={[styles.sheet, { backgroundColor: background }]}>
+            {/* Drag handle */}
+            <View style={styles.handle} />
 
-          {/* Form */}
-          <View style={styles.form}>
-            {/* Name */}
-            <View style={styles.formGroup}>
-              <Text style={[styles.label, { color: text }]}>Home Name *</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    borderColor: errors.name ? "#ff3b30" : border,
-                    color: text,
-                  },
-                ]}
-                placeholder="e.g., My House"
-                placeholderTextColor={muted}
-                value={formData.name}
-                onChangeText={(val) =>
-                  setFormData({ ...formData, name: val })
-                }
-                editable={!isLoading}
-              />
-              {errors.name && (
-                <Text style={styles.errorText}>{errors.name}</Text>
-              )}
+            {/* Header */}
+            <View style={[styles.header, { borderBottomColor: border }]}>
+              <View style={[styles.headerIcon, { backgroundColor: `${tint}18` }]}>
+                <Ionicons name="home-outline" size={18} color={tint} />
+              </View>
+
+              <Text style={[styles.title, { color: text }]}>Add New Home</Text>
+              <Pressable
+                onPress={handleClose}
+                disabled={isLoading}
+                style={[styles.closeBtn, { backgroundColor: "#f0f0f0" }]}
+              >
+                <Ionicons name="close" size={18} color={text} />
+              </Pressable>
             </View>
 
-            {/* Location */}
-            <View style={styles.formGroup}>
-              <Text style={[styles.label, { color: text }]}>
-                Location *
-              </Text>
-              <TextInput
+            {/* Content */}
+            <ScrollView
+              style={styles.content}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Message */}
+              {message && (
+                <View
+                  style={[
+                    styles.messageBanner,
+                    {
+                      backgroundColor:
+                        message.type === "success" ? "#22c55e18" : "#ff3b3018",
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={
+                      message.type === "success"
+                        ? "checkmark-circle"
+                        : "alert-circle"
+                    }
+                    size={16}
+                    color={message.type === "success" ? "#22c55e" : "#ff3b30"}
+                  />
+                  <Text
+                    style={[
+                      styles.messageText,
+                      {
+                        color:
+                          message.type === "success" ? "#22c55e" : "#ff3b30",
+                      },
+                    ]}
+                  >
+                    {message.text}
+                  </Text>
+                </View>
+              )}
+
+              {renderInput("Home Name", "e.g., My Villa", "name")}
+              {renderInput("Location", "e.g., Cairo, Nasr City", "location")}
+            </ScrollView>
+
+            {/* Footer */}
+            <View style={[styles.footer, { borderTopColor: border }]}>
+              <TouchableOpacity
+                style={[styles.cancelBtn, { borderColor: border }]}
+                onPress={handleClose}
+                disabled={isLoading}
+              >
+                <Text style={[styles.cancelText, { color: text }]}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
                 style={[
-                  styles.input,
-                  {
-                    borderColor: errors.location ? "#ff3b30" : border,
-                    color: text,
-                  },
+                  styles.submitBtn,
+                  { backgroundColor: tint },
+                  isLoading && { opacity: 0.7 },
                 ]}
-                placeholder="e.g., Downtown"
-                placeholderTextColor={muted}
-                value={formData.location}
-                onChangeText={(val) =>
-                  setFormData({ ...formData, location: val })
-                }
-                editable={!isLoading}
-              />
-              {errors.location && (
-                <Text style={styles.errorText}>{errors.location}</Text>
-              )}
+                onPress={handleAddHome}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <>
+                    <Ionicons name="add" size={18} color="#fff" />
+                    <Text style={styles.submitText}>Add Home</Text>
+                  </>
+                )}
+              </TouchableOpacity>
             </View>
-
-
-
-            {/* Error Message */}
-            {errors.submit && (
-              <Text style={styles.errorText}>{errors.submit}</Text>
-            )}
-          </View>
-
-          {/* Buttons */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.cancelButton, { borderColor: border }]}
-              onPress={handleClose}
-              disabled={isLoading}
-            >
-              <Text style={[styles.cancelButtonText, { color: text }]}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.button,
-                styles.createButton,
-                { backgroundColor: tint },
-                isLoading && styles.buttonDisabled,
-              ]}
-              onPress={handleCreate}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <>
-                  <Ionicons name="add" size={16} color="#fff" />
-                  <Text style={styles.createButtonText}>Create Home</Text>
-                </>
-              )}
-            </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -220,100 +248,122 @@ export default function AddHomeModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.45)",
   },
-
-  container: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
-    paddingBottom: 30,
-    paddingHorizontal: 20,
+  sheet: {
     maxHeight: "90%",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: "hidden",
   },
-
+  handle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#d0d0d0",
+    alignSelf: "center",
+    marginTop: 10,
+    marginBottom: 4,
+  },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
   },
-
+  headerIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 9,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   title: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "700",
+    flex: 1,
   },
-
-  form: {
-    maxHeight: 400,
-    marginBottom: 20,
+  closeBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
   },
-
-  formGroup: {
-    marginBottom: 16,
+  content: {
+    paddingHorizontal: 20,
+    paddingTop: 18,
   },
-
+  fieldContainer: {
+    marginBottom: 18,
+  },
   label: {
     fontSize: 13,
     fontWeight: "600",
-    marginBottom: 6,
+    marginBottom: 7,
   },
-
   input: {
     borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 13,
+    borderRadius: 11,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
+    fontSize: 15,
+    backgroundColor: "#fafafa",
   },
-
-  textArea: {
-    textAlignVertical: "top",
-    paddingTop: 10,
-  },
-
   errorText: {
     color: "#ff3b30",
-    fontSize: 11,
-    marginTop: 4,
+    fontSize: 12,
+    marginTop: 5,
+    fontWeight: "500",
   },
-
-  buttonContainer: {
+  messageBanner: {
     flexDirection: "row",
-    gap: 12,
+    alignItems: "center",
+    gap: 9,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
+    borderRadius: 11,
+    marginBottom: 16,
   },
-
-  button: {
+  messageText: {
+    fontSize: 13,
+    fontWeight: "600",
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+  },
+  footer: {
     flexDirection: "row",
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+  },
+  cancelBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 13,
     justifyContent: "center",
     alignItems: "center",
-    gap: 6,
   },
-
-  cancelButton: {
-    borderWidth: 1,
-  },
-
-  cancelButtonText: {
-    fontSize: 14,
+  cancelText: {
+    fontSize: 15,
     fontWeight: "600",
   },
-
-  createButton: {
-    backgroundColor: "#007AFF",
+  submitBtn: {
+    flex: 2,
+    borderRadius: 12,
+    paddingVertical: 13,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 7,
   },
-
-  createButtonText: {
+  submitText: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
-  },
-
-  buttonDisabled: {
-    opacity: 0.6,
   },
 });

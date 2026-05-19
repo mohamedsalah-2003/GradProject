@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
   rangeBtnText:     { color: COLORS.textMuted, fontSize: 13, fontWeight: '500' },
   rangeBtnTextActive:{ color: COLORS.textPrimary, fontWeight: '600' },
 
-  statsGrid:    { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
+  statsGrid:    { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 , justifyContent: 'space-between' },
   statCard:     { backgroundColor: COLORS.card, borderWidth: 1, borderColor: COLORS.border, borderRadius: 14, padding: 14, width: '47.5%', alignItems: 'flex-start', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1 },
   statIconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
   statValue:    { fontSize: 24, fontWeight: '700', letterSpacing: -0.5 },
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   sectionTitleRow:{ flexDirection: 'row', alignItems: 'center' },
   sectionTitle:  { fontSize: 15, fontWeight: '600', color: COLORS.textPrimary },
   sectionSubtitle:{ fontSize: 12, color: COLORS.textMuted, marginTop: 2 },
-  chart:         { borderRadius: 10, marginLeft: -16 },
+  chart:         { borderRadius: 10, marginLeft: 0 },
 
   sensorRow:     { flexDirection: 'row' },
   sensorItem:    { flex: 1, alignItems: 'center' },

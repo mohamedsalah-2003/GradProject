@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import { ScrollView, StatusBar, StyleSheet, View } from "react-native";
 
 import ProfileHeader from "../../../components/profile/ProfileHeader";
@@ -14,32 +14,28 @@ import { useAuth } from "../../../context/AuthContext";
 
 export default function Profile() {
   const router = useRouter();
-  const [darkMode, setDarkMode] = useState(false);
-   const { user, isAuthReady } = useAuth();
+  const { user, isAuthReady, logout } = useAuth();
 
-const formatName = (name: string) => {
-  if (!name) return "";
-
-  return name
-    .split(" ")
-    .map((word: string) =>
-      word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    )
-    .join(" ");
-};
+  const formatName = (name: string) => {
+    if (!name) return "";
+    return name
+      .split(" ")
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
 
   if (!isAuthReady) return null;
 
-const handlePressSetting = (key: string) => {
+  const handlePressSetting = (key: string) => {
     switch (key) {
       case "notifications":
         router.push("/alerts");
         break;
-      case "security":
-        router.push("/settings/security"); 
+      case "ChangePassword":
+        router.push("/settings/ChangePassword");
         break;
       case "emergency-contacts":
-        router.push("/settings/emergency-contacts"); 
+        router.push("/(app)/EmergencyContacts/ManageEmergencyContactsScreen");
         break;
       default:
         console.log("No route defined for:", key);
@@ -47,28 +43,26 @@ const handlePressSetting = (key: string) => {
   };
 
   const handleSignOut = () => {
+
     router.replace("/(auth)/login");
   };
 
   return (
     <ScrollView
-      style={[
-        styles.screen,
-        { backgroundColor: darkMode ? "#0F172A" : "#F8FAFC" },
-      ]}
+      style={styles.screen}
       contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
     >
-      <ProfileHeader darkMode={darkMode} />
+      <ProfileHeader />
 
-   <UserCard
-  darkMode={darkMode}
-  name={formatName(user?.fullname || "") || "User"}
-  role={user?.role || "User"}
-  email={user?.email || ""}
-  phone={user?.phoneNumber || "Not provided"}
-/>
+      <UserCard
+        name={formatName(user?.fullname || "") || "User"}
+        role={user?.role || "User"}
+        email={user?.email || ""}
+        phone={user?.phoneNumber || "Not provided"}
+      />
 
-      <SectionCard title="Settings" darkMode={darkMode}>
+      <SectionCard title="Settings">
         {PROFILE_SETTINGS.map((item, idx) => (
           <SettingRow
             key={item.key}
@@ -76,20 +70,17 @@ const handlePressSetting = (key: string) => {
             title={item.title}
             subtitle={item.subtitle}
             type={item.type}
-            value={item.key === "darkMode" ? darkMode : undefined}
-            onToggle={item.key === "darkMode" ? setDarkMode : undefined}
             onPress={item.type === "link" ? () => handlePressSetting(item.key) : undefined}
             isLast={idx === PROFILE_SETTINGS.length - 1}
-            darkMode={darkMode}
           />
         ))}
       </SectionCard>
 
-      <SystemInfoCard darkMode={darkMode} data={SYSTEM_INFO} />
+      <SystemInfoCard data={SYSTEM_INFO} />
 
       <View style={{ height: 6 }} />
-      <SignOutButton onPress={handleSignOut} darkMode={darkMode} />
-      <View style={{ height: 18 }} />
+      <SignOutButton onPress={handleSignOut} />
+      <View style={{ height: 32 }} />
     </ScrollView>
   );
 }
@@ -97,8 +88,12 @@ const handlePressSetting = (key: string) => {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: "#F8FAFC",
     marginTop: StatusBar.currentHeight || 0,
-    
   },
-  content: { padding: 16 },
+  content: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
+  },
 });

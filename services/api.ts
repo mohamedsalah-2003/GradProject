@@ -28,6 +28,18 @@ api.interceptors.response.use(
             // هنا قرارك:
             // 1) logout user
             // 2) refresh token flow
+                try {
+        // السيرفر هيستخدم refreshToken من httpOnly cookie
+        const res =await refreshTokenRequest();
+console.log(res);
+
+        // إعادة تنفيذ نفس الطلب بعد refresh
+        return api(originalRequest);
+      } catch (refreshError) {
+        // refresh failed → logout user
+        router.replace("/(auth)/login");
+        return Promise.reject(refreshError);
+      }
             // 3) redirect to login
             router.push("/login"); // Redirect to login page
         }

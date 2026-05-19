@@ -2,13 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import { ThemedView } from "@/components/themed-view";
@@ -18,11 +18,7 @@ import { getDevice } from "@/services/devices.service";
 interface Device {
   _id: string;
   userId: string;
-  homeId: {
-    _id: string;
-    name: string;
-    location: string;
-  };
+  homeId: { _id: string; name: string; location: string };
   name: string;
   location: string;
   isActive: boolean;
@@ -38,15 +34,14 @@ export default function DeviceDetailsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const background = useThemeColor({}, "background");
-  const text = useThemeColor({}, "text");
-  const muted = useThemeColor({}, "icon");
-  const border = useThemeColor({}, "border");
-  const tint = useThemeColor({}, "tint");
+  const background = "#ffffff";
+  const text = "#111111";
+  const muted = "#888888";
+  const border = "#e5e5e5";
+  const tint = "#0590b3";
+  const card = "#f9fafb" ;
 
-  useEffect(() => {
-    fetchDeviceDetails();
-  }, [id]);
+  useEffect(() => { fetchDeviceDetails(); }, [id]);
 
   const fetchDeviceDetails = async () => {
     try {
@@ -55,7 +50,6 @@ export default function DeviceDetailsScreen() {
       const response = await getDevice(id as string);
       setDevice(response.device);
     } catch (err: any) {
-      console.error("Error fetching device:", err);
       setError(err?.response?.data?.message || "Failed to load device details");
     } finally {
       setIsLoading(false);
@@ -64,42 +58,13 @@ export default function DeviceDetailsScreen() {
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit",
     });
   };
 
-  const StatusBadge = ({ isActive }: { isActive: boolean }) => (
-    <View
-      style={[
-        styles.statusBadge,
-        {
-          backgroundColor: isActive ? "#1DB95420" : "#ff3b3020",
-        },
-      ]}
-    >
-      <Ionicons
-        name={isActive ? "checkmark-circle" : "close-circle"}
-        size={16}
-        color={isActive ? "#1DB954" : "#ff3b30"}
-      />
-      <Text
-        style={{
-          color: isActive ? "#1DB954" : "#ff3b30",
-          fontWeight: "700",
-          fontSize: 12,
-          marginLeft: 4,
-        }}
-      >
-        {isActive ? "Active" : "Offline"}
-      </Text>
-    </View>
-  );
+  // ─── Sub-components ────────────────────────────────────────────────
 
   const SectionCard = ({
     title,
@@ -110,12 +75,14 @@ export default function DeviceDetailsScreen() {
     icon: string;
     children: React.ReactNode;
   }) => (
-    <View style={[styles.section, { borderColor: border }]}>
-      <View style={styles.sectionHeader}>
-        <Ionicons name={icon as any} size={20} color={tint} />
+    <View style={[styles.section, { backgroundColor: card, borderColor: border }]}>
+      <View style={[styles.sectionHeader, { borderBottomColor: border }]}>
+        <View style={[styles.sectionIconWrap, { backgroundColor: `${tint}18` }]}>
+          <Ionicons name={icon as any} size={16} color={tint} />
+        </View>
         <Text style={[styles.sectionTitle, { color: text }]}>{title}</Text>
       </View>
-      {children}
+      <View style={styles.sectionBody}>{children}</View>
     </View>
   );
 
@@ -123,167 +90,152 @@ export default function DeviceDetailsScreen() {
     label,
     value,
     icon,
+    mono,
+    last,
   }: {
     label: string;
     value: string;
     icon?: string;
+    mono?: boolean;
+    last?: boolean;
   }) => (
-    <View style={styles.detailRow}>
-      <View style={styles.labelContainer}>
-        {icon && (
-          <Ionicons
-            name={icon as any}
-            size={14}
-            color={muted}
-            style={{ marginRight: 6 }}
-          />
-        )}
-        <Text style={[styles.label, { color: muted }]}>{label}</Text>
+    <View style={[styles.detailRow, !last && { borderBottomColor: border, borderBottomWidth: 1 }]}>
+      <View style={styles.detailLabel}>
+        {icon && <Ionicons name={icon as any} size={13} color={muted} style={{ marginRight: 5 }} />}
+        <Text style={[styles.labelText, { color: muted }]}>{label}</Text>
       </View>
-      <Text style={[styles.value, { color: text }]} numberOfLines={2}>
+      <Text
+        style={[
+          styles.valueText,
+          { color: text },
+          mono && styles.monoText,
+        ]}
+        numberOfLines={2}
+        selectable
+      >
         {value}
       </Text>
     </View>
   );
 
+  // ─── Loading ───────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <ThemedView style={[styles.container, { backgroundColor: background }]}>
-        <View style={styles.centerContent}>
+        <View style={[styles.topBar, { borderBottomColor: border, paddingTop: StatusBar.currentHeight || 20 }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={22} color={text} />
+          </TouchableOpacity>
+          <Text style={[styles.topBarTitle, { color: text }]}>Device Details</Text>
+          <View style={{ width: 38 }} />
+        </View>
+        <View style={styles.center}>
           <ActivityIndicator size="large" color={tint} />
-          <Text style={[styles.loadingText, { color: muted }]}>
-            Loading device details...
-          </Text>
+          <Text style={[styles.stateText, { color: muted }]}>Loading device…</Text>
         </View>
       </ThemedView>
     );
   }
 
+  // ─── Error ─────────────────────────────────────────────────────────
   if (error || !device) {
     return (
       <ThemedView style={[styles.container, { backgroundColor: background }]}>
-        <View style={styles.centerContent}>
-          <Ionicons name="alert-circle-outline" size={48} color="#ff3b30" />
-          <Text style={[styles.errorText, { color: text }]}>
-            {error || "Device not found"}
-          </Text>
-          <TouchableOpacity
-            style={[styles.retryButton, { backgroundColor: tint }]}
-            onPress={fetchDeviceDetails}
-          >
-            <Text style={styles.retryButtonText}>Retry</Text>
+        <View style={[styles.topBar, { borderBottomColor: border, paddingTop: StatusBar.currentHeight || 20 }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={22} color={text} />
+          </TouchableOpacity>
+          <Text style={[styles.topBarTitle, { color: text }]}>Device Details</Text>
+          <View style={{ width: 38 }} />
+        </View>
+        <View style={styles.center}>
+          <View style={[styles.stateIconWrap, { backgroundColor: "#ff3b3018" }]}>
+            <Ionicons name="alert-circle-outline" size={30} color="#ff3b30" />
+          </View>
+          <Text style={[styles.stateText, { color: text }]}>{error || "Device not found"}</Text>
+          <TouchableOpacity style={[styles.retryBtn, { backgroundColor: tint }]} onPress={fetchDeviceDetails}>
+            <Ionicons name="reload-outline" size={15} color="#fff" />
+            <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
       </ThemedView>
     );
   }
 
+  // ─── Main ──────────────────────────────────────────────────────────
   return (
     <ThemedView style={[styles.container, { backgroundColor: background }]}>
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          { borderBottomColor: border, paddingTop: StatusBar.currentHeight || 20 },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
-          <Ionicons name="chevron-back" size={24} color={text} />
+      {/* Top bar */}
+      <View style={[styles.topBar, { borderBottomColor: border, paddingTop: StatusBar.currentHeight || 20 }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="chevron-back" size={22} color={text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: text }]}>Device Details</Text>
-        <View style={{ width: 40 }} />
+        <Text style={[styles.topBarTitle, { color: text }]}>Device Details</Text>
+        <View style={{ width: 38 }} />
       </View>
 
-      {/* Content */}
       <ScrollView
-        style={styles.content}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 30 }}
+        contentContainerStyle={styles.scroll}
       >
-        {/* Main Device Card */}
-        <View style={[styles.mainCard, { backgroundColor: tint + "10", borderColor: border }]}>
-          <View style={styles.deviceHeader}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.deviceName, { color: text }]}>
-                {device.name}
-              </Text>
-              <Text style={[styles.deviceLocation, { color: muted }]}>
-                📍 {device.location}
-              </Text>
+        {/* Hero card */}
+        <View style={[styles.heroCard, { backgroundColor: `${tint}10`, borderColor: border }]}>
+          <View style={[styles.heroIcon, { backgroundColor: `${tint}20` }]}>
+            <Ionicons name="hardware-chip-outline" size={32} color={tint} />
+          </View>
+          <View style={styles.heroInfo}>
+            <Text style={[styles.heroName, { color: text }]}>{device.name}</Text>
+            <View style={styles.heroMeta}>
+              <Ionicons name="location-outline" size={13} color={muted} />
+              <Text style={[styles.heroMetaText, { color: muted }]}>{device.location}</Text>
             </View>
-            <StatusBadge isActive={device.isActive} />
+          </View>
+          <View
+            style={[
+              styles.heroBadge,
+              { backgroundColor: device.isActive ? "#22c55e18" : "#ff3b3018" },
+            ]}
+          >
+            <Ionicons
+              name={device.isActive ? "checkmark-circle" : "close-circle"}
+              size={14}
+              color={device.isActive ? "#22c55e" : "#ff3b30"}
+            />
+            <Text
+              style={[
+                styles.heroBadgeText,
+                { color: device.isActive ? "#22c55e" : "#ff3b30" },
+              ]}
+            >
+              {device.isActive ? "Active" : "Offline"}
+            </Text>
           </View>
         </View>
 
-        {/* Device Information Section */}
+        {/* Device Info */}
         <SectionCard title="Device Information" icon="phone-portrait-outline">
-          <View style={styles.sectionContent}>
-            <DetailRow
-              label="Device ID"
-              value={device._id}
-              icon="cube-outline"
-            />
-            <View style={[styles.divider, { backgroundColor: border }]} />
-            <DetailRow label="Status" value={device.isActive ? "Active" : "Offline"} />
-            <View style={[styles.divider, { backgroundColor: border }]} />
-            <DetailRow
-              label="Last Seen"
-              value={device.lastSeen || "Never"}
-              icon="time-outline"
-            />
-          </View>
+          <DetailRow label="Device ID" value={device._id} icon="cube-outline" mono />
+          <DetailRow label="Status" value={device.isActive ? "Active" : "Offline"} icon="radio-button-on-outline" />
+          <DetailRow label="Last Seen" value={device.lastSeen || "Never"} icon="time-outline" last />
         </SectionCard>
 
-        {/* Location Information Section */}
-        <SectionCard title="Location Information" icon="location-outline">
-          <View style={styles.sectionContent}>
-            <DetailRow
-              label="Location"
-              value={device.location}
-              icon="pin-outline"
-            />
-            <View style={[styles.divider, { backgroundColor: border }]} />
-            <DetailRow
-              label="Home"
-              value={device.homeId.name}
-              icon="home-outline"
-            />
-            <View style={[styles.divider, { backgroundColor: border }]} />
-            <DetailRow
-              label="Home Location"
-              value={device.homeId.location}
-              icon="map-outline"
-            />
-          </View>
+        {/* Location */}
+        <SectionCard title="Location" icon="location-outline">
+          <DetailRow label="Location" value={device.location} icon="pin-outline" />
+          <DetailRow label="Home" value={device.homeId.name} icon="home-outline" />
+          <DetailRow label="Home Address" value={device.homeId.location} icon="map-outline" last />
         </SectionCard>
 
-        {/* Timestamps Section */}
+        {/* Timestamps */}
         <SectionCard title="Timestamps" icon="calendar-outline">
-          <View style={styles.sectionContent}>
-            <DetailRow
-              label="Created"
-              value={formatDate(device.createdAt)}
-              icon="add-circle-outline"
-            />
-            <View style={[styles.divider, { backgroundColor: border }]} />
-            <DetailRow
-              label="Last Updated"
-              value={formatDate(device.updatedAt)}
-              icon="refresh-outline"
-            />
-          </View>
+          <DetailRow label="Created" value={formatDate(device.createdAt)} icon="add-circle-outline" />
+          <DetailRow label="Last Updated" value={formatDate(device.updatedAt)} icon="refresh-outline" last />
         </SectionCard>
 
-        {/* Additional Info Section */}
-        <SectionCard title="Additional Information" icon="information-circle-outline">
-          <View style={styles.sectionContent}>
-            <DetailRow label="User ID" value={device.userId} icon="person-outline" />
-            <View style={[styles.divider, { backgroundColor: border }]} />
-            <DetailRow label="Home ID" value={device.homeId._id} icon="home-outline" />
-          </View>
+        {/* IDs */}
+        <SectionCard title="References" icon="information-circle-outline">
+          <DetailRow label="User ID" value={device.userId} icon="person-outline" mono />
+          <DetailRow label="Home ID" value={device.homeId._id} icon="home-outline" mono last />
         </SectionCard>
       </ScrollView>
     </ThemedView>
@@ -291,149 +243,126 @@ export default function DeviceDetailsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
 
-  header: {
+  topBar: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
+    paddingBottom: 12,
     borderBottomWidth: 1,
   },
-
-  backButton: {
-    padding: 8,
-    marginLeft: -8,
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
   },
-
-  headerTitle: {
-    fontSize: 18,
+  topBarTitle: {
+    fontSize: 17,
     fontWeight: "700",
   },
 
-  content: {
-    flex: 1,
+  scroll: {
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 18,
+    paddingBottom: 36,
+    gap: 14,
   },
 
-  mainCard: {
+  // Hero
+  heroCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
     borderWidth: 1,
     borderRadius: 16,
     padding: 16,
-    marginBottom: 20,
+    marginBottom: 2,
   },
-
-  deviceHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 12,
+  heroIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
   },
-
-  deviceName: {
-    fontSize: 24,
-    fontWeight: "800",
-    marginBottom: 4,
-  },
-
-  deviceLocation: {
-    fontSize: 14,
-  },
-
-  statusBadge: {
+  heroInfo: { flex: 1, gap: 5 },
+  heroName: { fontSize: 20, fontWeight: "800", letterSpacing: -0.3 },
+  heroMeta: { flexDirection: "row", alignItems: "center", gap: 4 },
+  heroMetaText: { fontSize: 13 },
+  heroBadge: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
   },
+  heroBadgeText: { fontSize: 12, fontWeight: "700" },
 
+  // Section
   section: {
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 16,
+    borderRadius: 14,
+    overflow: "hidden",
   },
-
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    marginBottom: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
   },
-
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
+  sectionIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
   },
+  sectionTitle: { fontSize: 14, fontWeight: "700" },
+  sectionBody: { paddingHorizontal: 14 },
 
-  sectionContent: {
-    gap: 12,
-  },
-
+  // Detail row
   detailRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 8,
+    paddingVertical: 12,
+    gap: 12,
   },
-
-  labelContainer: {
+  detailLabel: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 0.4,
+    flex: 0.42,
   },
+  labelText: { fontSize: 12, fontWeight: "500" },
+  valueText: { fontSize: 13, fontWeight: "600", flex: 0.58, textAlign: "right" },
+  monoText: { fontFamily: "monospace", fontSize: 11 },
 
-  label: {
-    fontSize: 12,
-    fontWeight: "500",
-  },
-
-  value: {
-    fontSize: 13,
-    fontWeight: "600",
-    flex: 0.6,
-    textAlign: "right",
-  },
-
-  divider: {
-    height: 1,
-  },
-
-  centerContent: {
-    flex: 1,
+  // States
+  center: { flex: 1, justifyContent: "center", alignItems: "center", gap: 10, padding: 20 },
+  stateIconWrap: {
+    width: 66,
+    height: 66,
+    borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
+    marginBottom: 4,
   },
-
-  loadingText: {
-    fontSize: 14,
-    marginTop: 12,
+  stateText: { fontSize: 14, fontWeight: "500", textAlign: "center" },
+  retryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 10,
   },
-
-  errorText: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 12,
-    textAlign: "center",
-  },
-
-  retryButton: {
-    marginTop: 20,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-
-  retryButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-  },
+  retryText: { color: "#fff", fontSize: 13, fontWeight: "600" },
 });

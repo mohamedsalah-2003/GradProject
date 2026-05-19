@@ -1,40 +1,59 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
-export default function ProfileHeader({ darkMode }: { darkMode: boolean }) {
+export default function ProfileHeader() {
   return (
     <View style={styles.wrap}>
-      <Text
-        style={[
-          styles.title,
-          { color: darkMode ? "#FFFFFF" : "#0F172A" },
-        ]}
-      >
-        Profile
-      </Text>
-
-      <Text
-        style={[
-          styles.sub,
-          { color: darkMode ? "#CBD5E1" : "#64748B" },
-        ]}
-      >
-        Manage your account and settings
-      </Text>
-
-      <View
-        style={[
-          styles.divider,
-          { backgroundColor: darkMode ? "#1E293B" : "#E2E8F0" },
-        ]}
-      />
+      <View style={styles.topRow}>
+        <View>
+          <Text style={styles.title}>My Profile</Text>
+          <Text style={styles.sub}>Account & preferences</Text>
+        </View>
+        <View style={styles.iconBadge}>
+          <Ionicons name="person" size={20} color="#0891b2" />
+        </View>
+      </View>
+      <View style={styles.accentBar} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginBottom: 12 },
-  title: { fontSize: 28, fontWeight: "800" },
-  sub: { marginTop: 6, fontSize: 14 },
-  divider: { marginTop: 12, height: 1 },
+  wrap: {
+    marginBottom: 20,
+    paddingTop: 14,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#0F172A",
+    letterSpacing: -0.5,
+  },
+  sub: {
+    marginTop: 4,
+    fontSize: 14,
+    color: "#64748B",
+    fontWeight: "500",
+  },
+  iconBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#E0F2FE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  accentBar: {
+    marginTop: 14,
+    height: 2,
+    width: 36,
+    borderRadius: 2,
+    backgroundColor: "#0891b2",
+  },
 });

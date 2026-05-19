@@ -11,7 +11,6 @@ type Props = {
   onToggle?: (v: boolean) => void;
   onPress?: () => void;
   isLast?: boolean;
-  darkMode?: boolean;
 };
 
 export default function SettingRow({
@@ -23,85 +22,96 @@ export default function SettingRow({
   onToggle,
   onPress,
   isLast,
-  darkMode = false,
 }: Props) {
-  const bg = darkMode ? "#111827" : "#FFFFFF";
-  const bgPressed = darkMode ? "#0B1220" : "#F8FAFC";
-  const divider = darkMode ? "#1F2937" : "#E2E8F0";
-  const titleColor = darkMode ? "#FFFFFF" : "#0F172A";
-  const subColor = darkMode ? "#94A3B8" : "#64748B";
-  const iconColor = darkMode ? "#E2E8F0" : "#0F172A";
-  const chevronColor = darkMode ? "#64748B" : "#94A3B8";
-
   return (
     <Pressable
       onPress={type === "link" ? onPress : undefined}
       style={({ pressed }) => [
         styles.row,
-        { backgroundColor: pressed && type === "link" ? bgPressed : bg },
+        pressed && type === "link" && styles.rowPressed,
       ]}
     >
-      
-      <View style={styles.left}>
-        <Ionicons name={icon} size={20} color={iconColor} />
+      <View style={styles.iconWrap}>
+        <Ionicons name={icon} size={17} color="#0891b2" />
       </View>
 
       <View style={styles.mid}>
-        <Text style={[styles.title, { color: titleColor }]}>{title}</Text>
-        <Text style={[styles.sub, { color: subColor }]}>{subtitle}</Text>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.sub}>{subtitle}</Text>
       </View>
 
-      
       <View style={styles.right}>
         {type === "switch" ? (
-          <Switch value={!!value} onValueChange={onToggle} />
+          <Switch
+            value={!!value}
+            onValueChange={onToggle}
+            trackColor={{ false: "#E2E8F0", true: "#0891b2" }}
+            thumbColor="#FFFFFF"
+          />
         ) : (
-          <Ionicons name="chevron-forward" size={20} color={chevronColor} />
+          <View style={styles.chevronWrap}>
+            <Ionicons name="chevron-forward" size={14} color="#0891b2" />
+          </View>
         )}
       </View>
 
-      
-      {!isLast ? (
-        <View style={[styles.divider, { backgroundColor: divider }]} />
-      ) : null}
+      {!isLast && <View style={styles.divider} />}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: "row", 
-    alignItems: "center", 
-    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 13,
     paddingHorizontal: 14,
+    backgroundColor: "#FFFFFF",
   },
-  left: {
-    width: 34,
+  rowPressed: {
+    backgroundColor: "#F0FAFF",
+  },
+  iconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#E0F2FE",
     alignItems: "center",
     justifyContent: "center",
   },
   mid: {
     flex: 1,
-    paddingHorizontal: 10,
-  },
-  right: {
-    minWidth: 40,
-    alignItems: "flex-end",
-    justifyContent: "center",
+    paddingHorizontal: 12,
   },
   title: {
     fontSize: 14,
-    fontWeight: "800",
+    fontWeight: "700",
+    color: "#0F172A",
   },
   sub: {
     marginTop: 2,
     fontSize: 12,
+    color: "#64748B",
+    fontWeight: "500",
+  },
+  right: {
+    alignItems: "flex-end",
+    justifyContent: "center",
+  },
+  chevronWrap: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: "#E0F2FE",
+    alignItems: "center",
+    justifyContent: "center",
   },
   divider: {
     position: "absolute",
-    left: 14,
+    left: 62,
     right: 14,
     bottom: 0,
     height: 1,
+    backgroundColor: "#E6ECF3",
   },
 });

@@ -14,7 +14,7 @@ import { router } from "expo-router";
 const RecentActivitySection = ({
   activities
 }) => {
-  console.log(activities);
+
   
   return (
     <>

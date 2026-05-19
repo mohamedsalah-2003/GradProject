@@ -3,14 +3,13 @@ import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 type Props = {
-  darkMode: boolean;
   name: string;
   role: string;
   email: string;
   phone: string;
 };
 
-export default function UserCard({ darkMode, name, role, email, phone }: Props) {
+export default function UserCard({ name, role, email, phone }: Props) {
   const initials = name
     .split(" ")
     .filter(Boolean)
@@ -19,50 +18,52 @@ export default function UserCard({ darkMode, name, role, email, phone }: Props) 
     .join("");
 
   return (
-    <View
-      style={[
-        styles.card,
-        {
-          backgroundColor: darkMode ? "#111827" : "#FFFFFF",
-          borderColor: darkMode ? "#1F2937" : "#E2E8F0",
-        },
-      ]}
-    >
-      <View style={styles.topRow}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{initials || "U"}</Text>
+    <View style={styles.card}>
+      {/* Cyan top strip */}
+      <View style={styles.topStrip} />
+
+      <View style={styles.body}>
+        {/* Avatar row */}
+        <View style={styles.topRow}>
+          <View style={styles.avatarWrap}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{initials || "U"}</Text>
+            </View>
+            <View style={styles.onlineDot} />
+          </View>
+          <View style={{ flex: 1, marginLeft: 14 }}>
+            <Text style={styles.name}>{name}</Text>
+            <View style={styles.rolePill}>
+              <Text style={styles.roleText}>{role}</Text>
+            </View>
+          </View>
+          <View style={styles.editBtn}>
+            <Ionicons name="create-outline" size={17} color="#0891b2" />
+          </View>
         </View>
 
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.name, { color: darkMode ? "#FFFFFF" : "#0F172A" }]}>
-            {name}
-          </Text>
-          <Text style={[styles.role, { color: darkMode ? "#CBD5E1" : "#64748B" }]}>
-            {role}
-          </Text>
+        <View style={styles.divider} />
+
+        {/* Email */}
+        <View style={styles.infoRow}>
+          <View style={styles.infoIconWrap}>
+            <Ionicons name="mail-outline" size={16} color="#0891b2" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.infoLabel}>Email address</Text>
+            <Text style={styles.infoValue}>{email}</Text>
+          </View>
         </View>
-      </View>
 
-      <View
-        style={[
-          styles.divider,
-          { backgroundColor: darkMode ? "#1F2937" : "#E2E8F0" },
-        ]}
-      />
-
-      <View style={styles.item}>
-        <Ionicons name="mail-outline" size={18} color={darkMode ? "#CBD5E1" : "#64748B"} />
-        <View style={{ marginLeft: 10 }}>
-          <Text style={[styles.label, { color: darkMode ? "#94A3B8" : "#64748B" }]}>Email</Text>
-          <Text style={[styles.value, { color: darkMode ? "#FFFFFF" : "#0F172A" }]}>{email}</Text>
-        </View>
-      </View>
-
-      <View style={styles.item}>
-        <Ionicons name="call-outline" size={18} color={darkMode ? "#CBD5E1" : "#64748B"} />
-        <View style={{ marginLeft: 10 }}>
-          <Text style={[styles.label, { color: darkMode ? "#94A3B8" : "#64748B" }]}>Phone</Text>
-          <Text style={[styles.value, { color: darkMode ? "#FFFFFF" : "#0F172A" }]}>{phone}</Text>
+        {/* Phone */}
+        <View style={[styles.infoRow, { marginBottom: 0 }]}>
+          <View style={styles.infoIconWrap}>
+            <Ionicons name="call-outline" size={16} color="#0891b2" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.infoLabel}>Phone number</Text>
+            <Text style={styles.infoValue}>{phone}</Text>
+          </View>
         </View>
       </View>
     </View>
@@ -72,29 +73,113 @@ export default function UserCard({ darkMode, name, role, email, phone }: Props) 
 const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 2,
+    backgroundColor: "#FFFFFF",
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#E6ECF3",
+    shadowColor: "#0891b2",
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+    overflow: "hidden",
   },
-  topRow: { flexDirection: "row", alignItems: "center" },
+  topStrip: {
+    height: 5,
+    backgroundColor: "#0891b2",
+  },
+  body: {
+    padding: 16,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  avatarWrap: {
+    position: "relative",
+  },
   avatar: {
     width: 56,
     height: 56,
-    borderRadius: 28,
-    backgroundColor: "#0EA5B7",
+    borderRadius: 16,
+    backgroundColor: "#0891b2",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: {
+    color: "#FFFFFF",
+    fontWeight: "800",
+    fontSize: 18,
+    letterSpacing: 1,
+  },
+  onlineDot: {
+    position: "absolute",
+    bottom: 2,
+    right: 2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#22C55E",
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+  },
+  name: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#0F172A",
+    letterSpacing: -0.3,
+  },
+  rolePill: {
+    marginTop: 5,
+    alignSelf: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 20,
+    backgroundColor: "#E0F2FE",
+  },
+  roleText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#0891b2",
+  },
+  editBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#E0F2FE",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "#E6ECF3",
+    marginVertical: 14,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  infoIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: "#E0F2FE",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
   },
-  avatarText: { color: "#fff", fontWeight: "800", fontSize: 18 },
-  name: { fontSize: 18, fontWeight: "800" },
-  role: { marginTop: 2, fontSize: 13 },
-  divider: { marginVertical: 14, height: 1 },
-  item: { flexDirection: "row", alignItems: "center", paddingVertical: 8 },
-  label: { fontSize: 12 },
-  value: { marginTop: 2, fontSize: 14, fontWeight: "600" },
+  infoLabel: {
+    fontSize: 11,
+    color: "#64748B",
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  infoValue: {
+    marginTop: 2,
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0F172A",
+  },
 });

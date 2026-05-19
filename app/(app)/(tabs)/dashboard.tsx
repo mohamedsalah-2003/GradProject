@@ -42,7 +42,7 @@ const Dashboard = () => {
     try {
       const data = await getDashboard();
       setDashboard(data);
-      console.log("hello from dashboard",data);
+    
       
       fadeAnim.setValue(0);
       Animated.timing(fadeAnim, {
