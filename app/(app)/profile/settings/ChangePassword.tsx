@@ -12,8 +12,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-import { useAuth } from "../../context/AuthContext";
-import { userService } from "../../services/user.service";
+import { useAuth } from "../../../../context/AuthContext";
+import { userService } from "../../../../services/user.service";
 import Toast from "react-native-toast-message";
 
 const COLORS = {

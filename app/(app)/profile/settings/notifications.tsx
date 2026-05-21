@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl } from "react-native";
-import { alertService } from "../../services/alert.service";
+import { getUserAlerts } from "../../../../services/alert.service";
 import { Ionicons } from '@expo/vector-icons';
 
 export default function NotificationsScreen() {
@@ -31,7 +31,7 @@ export default function NotificationsScreen() {
 
   const loadData = async () => {
   try {
-    const response = await alertService.getAllAlerts();
+    const response = await getUserAlerts();
 
   if (response && response.alerts && response.alerts.length > 0) {
     setAlerts(response.alerts); 

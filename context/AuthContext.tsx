@@ -69,11 +69,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     await disconnectSocket();
+    await signoutRequest();
     await storage.remove("user");
     await storage.remove("accesstoken");
     await storage.remove("refreshtoken");
-
-    await signoutRequest();
 
     setUser(null);
 

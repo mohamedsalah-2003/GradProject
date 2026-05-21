@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Pressable, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 type Props = {
   name: string;
@@ -16,6 +17,11 @@ export default function UserCard({ name, role, email, phone }: Props) {
     .slice(0, 2)
     .map((w) => w[0].toUpperCase())
     .join("");
+
+  const handleEditProfile = () => {
+    router.replace("/(app)/profile/editProfileInfo");
+  }
+
 
   return (
     <View style={styles.card}>
@@ -33,16 +39,15 @@ export default function UserCard({ name, role, email, phone }: Props) {
           </View>
           <View style={{ flex: 1, marginLeft: 14 }}>
             <Text style={styles.name}>{name}</Text>
-            <View style={styles.rolePill}>
+            {/* <View style={styles.rolePill}>
               <Text style={styles.roleText}>{role}</Text>
-            </View>
+            </View> */}
           </View>
-          <View style={styles.editBtn}>
-            <Ionicons name="create-outline" size={17} color="#0891b2" />
-          </View>
+
         </View>
 
         <View style={styles.divider} />
+
 
         {/* Email */}
         <View style={styles.infoRow}>
@@ -65,8 +70,16 @@ export default function UserCard({ name, role, email, phone }: Props) {
             <Text style={styles.infoValue}>{phone}</Text>
           </View>
         </View>
+        <View style={styles.divider} />
+        <View  >
+          <TouchableOpacity style={styles.editBtn} onPress={handleEditProfile}>
+            <Text style={styles.editBtnText}>Edit your info</Text>
+            <Ionicons name="create-outline" size={25} color="#0891b2" />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+
+    </View >
   );
 }
 
@@ -143,12 +156,23 @@ const styles = StyleSheet.create({
     color: "#0891b2",
   },
   editBtn: {
-    width: 36,
-    height: 36,
+    // width: 36,
+    // height: 36,
+    padding: 10,
+
+    flex: 1,
+    flexDirection: "row",
+    gap: 10,
     borderRadius: 10,
     backgroundColor: "#E0F2FE",
     alignItems: "center",
     justifyContent: "center",
+  },
+  editBtnText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#0F172A",
+    letterSpacing: -0.3,
   },
   divider: {
     height: 1,

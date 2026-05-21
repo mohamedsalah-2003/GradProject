@@ -32,7 +32,7 @@ export default function Profile() {
         router.push("/alerts");
         break;
       case "ChangePassword":
-        router.push("/settings/ChangePassword");
+        router.push("/(app)/profile/settings/ChangePassword");
         break;
       case "emergency-contacts":
         router.push("/(app)/EmergencyContacts/ManageEmergencyContactsScreen");
@@ -42,9 +42,10 @@ export default function Profile() {
     }
   };
 
-  const handleSignOut = () => {
-
+  const handleSignOut =async () => {
+    await logout();
     router.replace("/(auth)/login");
+
   };
 
   return (
