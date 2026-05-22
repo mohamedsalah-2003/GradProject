@@ -79,22 +79,24 @@ export default function AlertDetails() {
 
     loadAlert();
   }, [id]);
+  const [isResolving, setIsResolving] = useState(false)
 
   const handleResolve = async () => {
     if (resolved || resolving) return;
-
     try {
+      setIsResolving(true);
+
       setResolving(true);
-
       await markAlertAsResolved(id);
-
       setResolved(true);
       useAlertsStore.getState().markAlertLocallyAsResolved(id);   // ← ده بس
-      computeSystemStatus(useAlertsStore.getState().alerts)
+      await computeSystemStatus(useAlertsStore.getState().alerts)
     } catch (error) {
       console.error("Error resolving alert:", error);
     } finally {
       setResolving(false);
+      setIsResolving(false);
+
     }
   };
 
@@ -238,7 +240,7 @@ export default function AlertDetails() {
             resolved && styles.secondaryButtonResolved,
           ]}
           activeOpacity={0.85}
-          disabled={resolved || resolving}
+          disabled={resolved || resolving || isResolving}
         >
           <Text
             style={[
@@ -248,7 +250,7 @@ export default function AlertDetails() {
           >
             {resolved
               ? "Resolved"
-              : resolving
+              : isResolving
                 ? "Resolving..."
                 : "Mark as Resolved"}
           </Text>

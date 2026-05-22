@@ -11,6 +11,7 @@ import UserCard from "../../../components/profile/UserCard";
 
 import { PROFILE_SETTINGS, SYSTEM_INFO } from "../../../constants/profile";
 import { useAuth } from "../../../context/AuthContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Profile() {
   const router = useRouter();
@@ -42,47 +43,50 @@ export default function Profile() {
     }
   };
 
-  const handleSignOut =async () => {
+  const handleSignOut = async () => {
     await logout();
     router.replace("/(auth)/login");
 
   };
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      <ProfileHeader />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F8FAFC" }}>
 
-      <UserCard
-        name={formatName(user?.fullname || "") || "User"}
-        role={user?.role || "User"}
-        email={user?.email || ""}
-        phone={user?.phoneNumber || "Not provided"}
-      />
+      <ScrollView
+        style={styles.screen}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <ProfileHeader />
 
-      <SectionCard title="Settings">
-        {PROFILE_SETTINGS.map((item, idx) => (
-          <SettingRow
-            key={item.key}
-            icon={item.icon}
-            title={item.title}
-            subtitle={item.subtitle}
-            type={item.type}
-            onPress={item.type === "link" ? () => handlePressSetting(item.key) : undefined}
-            isLast={idx === PROFILE_SETTINGS.length - 1}
-          />
-        ))}
-      </SectionCard>
+        <UserCard
+          name={formatName(user?.fullname || "") || "User"}
+          role={user?.role || "User"}
+          email={user?.email || ""}
+          phone={user?.phoneNumber || "Not provided"}
+        />
 
-      <SystemInfoCard data={SYSTEM_INFO} />
+        <SectionCard title="Settings">
+          {PROFILE_SETTINGS.map((item, idx) => (
+            <SettingRow
+              key={item.key}
+              icon={item.icon}
+              title={item.title}
+              subtitle={item.subtitle}
+              type={item.type}
+              onPress={item.type === "link" ? () => handlePressSetting(item.key) : undefined}
+              isLast={idx === PROFILE_SETTINGS.length - 1}
+            />
+          ))}
+        </SectionCard>
 
-      <View style={{ height: 6 }} />
-      <SignOutButton onPress={handleSignOut} />
-      <View style={{ height: 32 }} />
-    </ScrollView>
+        <SystemInfoCard data={SYSTEM_INFO} />
+
+        <View style={{ height: 6 }} />
+        <SignOutButton onPress={handleSignOut} />
+        <View style={{ height: 32 }} />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 

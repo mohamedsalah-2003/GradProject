@@ -14,6 +14,7 @@ import {
 import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { getDevice } from "@/services/devices.service";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Device {
   _id: string;
@@ -39,7 +40,7 @@ export default function DeviceDetailsScreen() {
   const muted = "#888888";
   const border = "#e5e5e5";
   const tint = "#0590b3";
-  const card = "#f9fafb" ;
+  const card = "#f9fafb";
 
   useEffect(() => { fetchDeviceDetails(); }, [id]);
 
@@ -164,81 +165,84 @@ export default function DeviceDetailsScreen() {
 
   // ─── Main ──────────────────────────────────────────────────────────
   return (
-    <ThemedView style={[styles.container, { backgroundColor: background }]}>
-      {/* Top bar */}
-      <View style={[styles.topBar, { borderBottomColor: border, paddingTop: StatusBar.currentHeight || 20 }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={22} color={text} />
-        </TouchableOpacity>
-        <Text style={[styles.topBarTitle, { color: text }]}>Device Details</Text>
-        <View style={{ width: 38 }} />
-      </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F8FAFC" }}>
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
-      >
-        {/* Hero card */}
-        <View style={[styles.heroCard, { backgroundColor: `${tint}10`, borderColor: border }]}>
-          <View style={[styles.heroIcon, { backgroundColor: `${tint}20` }]}>
-            <Ionicons name="hardware-chip-outline" size={32} color={tint} />
-          </View>
-          <View style={styles.heroInfo}>
-            <Text style={[styles.heroName, { color: text }]}>{device.name}</Text>
-            <View style={styles.heroMeta}>
-              <Ionicons name="location-outline" size={13} color={muted} />
-              <Text style={[styles.heroMetaText, { color: muted }]}>{device.location}</Text>
-            </View>
-          </View>
-          <View
-            style={[
-              styles.heroBadge,
-              { backgroundColor: device.isActive ? "#22c55e18" : "#ff3b3018" },
-            ]}
-          >
-            <Ionicons
-              name={device.isActive ? "checkmark-circle" : "close-circle"}
-              size={14}
-              color={device.isActive ? "#22c55e" : "#ff3b30"}
-            />
-            <Text
-              style={[
-                styles.heroBadgeText,
-                { color: device.isActive ? "#22c55e" : "#ff3b30" },
-              ]}
-            >
-              {device.isActive ? "Active" : "Offline"}
-            </Text>
-          </View>
+      <ThemedView style={[styles.container, { backgroundColor: background }]}>
+        {/* Top bar */}
+        <View style={[styles.topBar, { borderBottomColor: border, paddingTop: StatusBar.currentHeight || 20 }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={22} color={text} />
+          </TouchableOpacity>
+          <Text style={[styles.topBarTitle, { color: text }]}>Device Details</Text>
+          <View style={{ width: 38 }} />
         </View>
 
-        {/* Device Info */}
-        <SectionCard title="Device Information" icon="phone-portrait-outline">
-          <DetailRow label="Device ID" value={device._id} icon="cube-outline" mono />
-          <DetailRow label="Status" value={device.isActive ? "Active" : "Offline"} icon="radio-button-on-outline" />
-          <DetailRow label="Last Seen" value={device.lastSeen || "Never"} icon="time-outline" last />
-        </SectionCard>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scroll}
+        >
+          {/* Hero card */}
+          <View style={[styles.heroCard, { backgroundColor: `${tint}10`, borderColor: border }]}>
+            <View style={[styles.heroIcon, { backgroundColor: `${tint}20` }]}>
+              <Ionicons name="hardware-chip-outline" size={32} color={tint} />
+            </View>
+            <View style={styles.heroInfo}>
+              <Text style={[styles.heroName, { color: text }]}>{device.name}</Text>
+              <View style={styles.heroMeta}>
+                <Ionicons name="location-outline" size={13} color={muted} />
+                <Text style={[styles.heroMetaText, { color: muted }]}>{device.location}</Text>
+              </View>
+            </View>
+            <View
+              style={[
+                styles.heroBadge,
+                { backgroundColor: device.isActive ? "#22c55e18" : "#ff3b3018" },
+              ]}
+            >
+              <Ionicons
+                name={device.isActive ? "checkmark-circle" : "close-circle"}
+                size={14}
+                color={device.isActive ? "#22c55e" : "#ff3b30"}
+              />
+              <Text
+                style={[
+                  styles.heroBadgeText,
+                  { color: device.isActive ? "#22c55e" : "#ff3b30" },
+                ]}
+              >
+                {device.isActive ? "Active" : "Offline"}
+              </Text>
+            </View>
+          </View>
 
-        {/* Location */}
-        <SectionCard title="Location" icon="location-outline">
-          <DetailRow label="Location" value={device.location} icon="pin-outline" />
-          <DetailRow label="Home" value={device.homeId.name} icon="home-outline" />
-          <DetailRow label="Home Address" value={device.homeId.location} icon="map-outline" last />
-        </SectionCard>
+          {/* Device Info */}
+          <SectionCard title="Device Information" icon="phone-portrait-outline">
+            <DetailRow label="Device ID" value={device._id} icon="cube-outline" mono />
+            <DetailRow label="Status" value={device.isActive ? "Active" : "Offline"} icon="radio-button-on-outline" />
+            <DetailRow label="Last Seen" value={device.lastSeen || "Never"} icon="time-outline" last />
+          </SectionCard>
 
-        {/* Timestamps */}
-        <SectionCard title="Timestamps" icon="calendar-outline">
-          <DetailRow label="Created" value={formatDate(device.createdAt)} icon="add-circle-outline" />
-          <DetailRow label="Last Updated" value={formatDate(device.updatedAt)} icon="refresh-outline" last />
-        </SectionCard>
+          {/* Location */}
+          <SectionCard title="Location" icon="location-outline">
+            <DetailRow label="Location" value={device.location} icon="pin-outline" />
+            <DetailRow label="Home" value={device.homeId.name} icon="home-outline" />
+            <DetailRow label="Home Address" value={device.homeId.location} icon="map-outline" last />
+          </SectionCard>
 
-        {/* IDs */}
-        <SectionCard title="References" icon="information-circle-outline">
-          <DetailRow label="User ID" value={device.userId} icon="person-outline" mono />
-          <DetailRow label="Home ID" value={device.homeId._id} icon="home-outline" mono last />
-        </SectionCard>
-      </ScrollView>
-    </ThemedView>
+          {/* Timestamps */}
+          <SectionCard title="Timestamps" icon="calendar-outline">
+            <DetailRow label="Created" value={formatDate(device.createdAt)} icon="add-circle-outline" />
+            <DetailRow label="Last Updated" value={formatDate(device.updatedAt)} icon="refresh-outline" last />
+          </SectionCard>
+
+          {/* IDs */}
+          <SectionCard title="References" icon="information-circle-outline">
+            <DetailRow label="User ID" value={device.userId} icon="person-outline" mono />
+            <DetailRow label="Home ID" value={device.homeId._id} icon="home-outline" mono last />
+          </SectionCard>
+        </ScrollView>
+      </ThemedView>
+    </SafeAreaView>
   );
 }
 

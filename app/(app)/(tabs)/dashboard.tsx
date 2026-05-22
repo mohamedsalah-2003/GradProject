@@ -27,37 +27,34 @@ const Dashboard = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   // ── Subscribe to global store ──────────────────────────────────────────────
-  const alerts        = useAlertsStore((s) => s.alerts);
+  const alerts = useAlertsStore((s) => s.alerts);
   const latestReading = useAlertsStore((s) => s.latestReading);
-  const latestAlert   = alerts[0] ?? null;
+  const latestAlert = alerts[0] ?? null;
 
   // ── systemStatus always derived from current alerts in store ───────────────
   // Recomputes automatically when any alert is resolved or a new one arrives
 
-  const liveSystemStatus = (alerts.length==0?dashboard?.systemStatus: computeSystemStatus(alerts));
-
+  const liveSystemStatus = useAlertsStore((s) => s.liveSystemStatus);
   // ── Fetch dashboard ────────────────────────────────────────────────────────
-  const fetchDashboard = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    try {
-      const data = await getDashboard();
-      setDashboard(data);
-    
-      
-      fadeAnim.setValue(0);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }).start();
-    } catch {
-      // silent fail
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [fadeAnim]);
 
+
+const fetchDashboard = useCallback(async (silent = false) => {
+  if (!silent) setLoading(true);
+  try {
+    const data = await getDashboard();
+    setDashboard(data);
+
+    // ← حدّث الـ store بالـ systemStatus الحقيقية من الـ API
+    useAlertsStore.getState().setInitialStatus(data.systemStatus);
+
+    fadeAnim.setValue(0);
+    Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+  } catch {
+  } finally {
+    setLoading(false);
+    setRefreshing(false);
+  }
+}, [fadeAnim]);
   useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
   const onRefresh = () => { setRefreshing(true); fetchDashboard(true); };
@@ -75,10 +72,10 @@ const Dashboard = () => {
       if (!prev) return prev;
 
       const newActivity = {
-        id:    latestAlert.id,
-        type:  latestAlert.type,
+        id: latestAlert.id,
+        type: latestAlert.type,
         title: latestAlert.description,
-        time:  latestAlert.time,
+        time: latestAlert.time,
       };
 
       return {
@@ -101,12 +98,12 @@ const Dashboard = () => {
       return {
         ...prev,
         sensors: {
-          temp:       latestReading.temp,
-          gas:        latestReading.gas,
-          smoke:      latestReading.smoke,
-          motion:     latestReading.motion === 1,
+          temp: latestReading.temp,
+          gas: latestReading.gas,
+          smoke: latestReading.smoke,
+          motion: latestReading.motion === 1,
           water_flow: latestReading.water_flow,
-          power:      latestReading.power,
+          power: latestReading.power,
         },
       };
     });
@@ -149,8 +146,8 @@ const Dashboard = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
-  content:   { paddingBottom: 20 },
-  centered:  { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: C.bg },
+  content: { paddingBottom: 20 },
+  centered: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: C.bg },
 });
 
 export default Dashboard;

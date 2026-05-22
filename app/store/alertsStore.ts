@@ -1,7 +1,7 @@
 import { updateStoredUnreadAlerts } from '../../utils/Auth/authStorage';
 import { create } from "zustand";
 import { AlertItem } from "../Types/alert";
-// ── Helper: compute systemStatus from active (unresolved) alerts ──────────────
+
 export const computeSystemStatus = (alerts: AlertItem[]): "alert" | "warning" | "safe" => {
   const active = alerts.filter((a) => !a.isResolved);
   if (active.some((a) => a.type === "Critical")) return "alert";
@@ -13,27 +13,31 @@ interface AlertsStore {
   alerts: AlertItem[];
   unreadCount: number;
   latestReading: any | null;
-
+  liveSystemStatus: "alert" | "warning" | "safe";
   addAlert: (alert: AlertItem) => void;
   markAlertLocallyAsRead: (id: string) => void;
-  markAlertLocallyAsResolved: (id: string) => void;   // ← جديد
+  markAlertLocallyAsResolved: (id: string) => void;
   setAlerts: (alerts: AlertItem[]) => void;
   setUnreadCount: (count: number) => void;
   removeAlert: (id: string) => void;
   setLatestReading: (reading: any) => void;
+  setInitialStatus: (status: "alert" | "warning" | "safe") => void;
 }
 
 export const useAlertsStore = create<AlertsStore>((set) => ({
   alerts: [],
   unreadCount: 0,
   latestReading: null,
+  liveSystemStatus: "safe",
 
   setLatestReading: (reading: any) => set({ latestReading: reading }),
+  setInitialStatus: (status) => set({ liveSystemStatus: status }),
 
   setAlerts: (alerts) =>
     set({
       alerts,
       unreadCount: alerts.filter((a) => a.unread).length,
+      liveSystemStatus: computeSystemStatus(alerts),
     }),
 
   setUnreadCount: (count) => set({ unreadCount: count }),
@@ -42,14 +46,13 @@ export const useAlertsStore = create<AlertsStore>((set) => ({
     set((state) => {
       const exists = state.alerts.some((a) => a.id === alert.id);
       if (exists) return state;
-      const newUnreadCount =
-        state.unreadCount + (alert.unread ? 1 : 0);
-
+      const newAlerts = [alert, ...state.alerts];
+      const newUnreadCount = state.unreadCount + (alert.unread ? 1 : 0);
       updateStoredUnreadAlerts(newUnreadCount);
-
       return {
-        alerts: [alert, ...state.alerts],
+        alerts: newAlerts,
         unreadCount: newUnreadCount,
+        liveSystemStatus: computeSystemStatus(newAlerts),
       };
     }),
 
@@ -65,14 +68,21 @@ export const useAlertsStore = create<AlertsStore>((set) => ({
       };
     }),
 
-  // ← لما يتعمل markAsResolved من أي شاشة، الـ dashboard يشوف التغيير تلقائياً
   markAlertLocallyAsResolved: (id) =>
-    set((state) => ({
-      alerts: state.alerts.filter((a) => a.id !== id),
-    })),
+    set((state) => {
+      const newAlerts = state.alerts.filter((a) => a.id !== id);
+      return {
+        alerts: newAlerts,
+        liveSystemStatus: computeSystemStatus(newAlerts),
+      };
+    }),
 
   removeAlert: (id) =>
-    set((state) => ({
-      alerts: state.alerts.filter((a) => a.id !== id),
-    })),
+    set((state) => {
+      const newAlerts = state.alerts.filter((a) => a.id !== id);
+      return {
+        alerts: newAlerts,
+        liveSystemStatus: computeSystemStatus(newAlerts),
+      };
+    }),
 }));

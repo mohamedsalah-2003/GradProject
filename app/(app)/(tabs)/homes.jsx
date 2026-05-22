@@ -16,6 +16,8 @@ import AddHomeModal from "@/components/Homes/add-home-modal";
 import DeleteHomeModal from "@/components/Homes/delete-home-modal";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { getAllHomes } from "@/services/homes.service";
+import Loader from "../../../components/ui/Loader";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Home() {
   const router = useRouter();
@@ -26,7 +28,7 @@ export default function Home() {
   const [deleteModal, setDeleteModal] = useState({ visible: false, homeId: null, homeName: null });
   const [addModalVisible, setAddModalVisible] = useState(false);
 
-  const background = "#ffffff";
+  const background = "#F8FAFC"
   const text = "#111111";
   const muted = "#888888";
   const border = "#e5e5e5";
@@ -122,106 +124,110 @@ export default function Home() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: background }]}>
-      <AddHomeModal
-        visible={addModalVisible}
-        onClose={() => setAddModalVisible(false)}
-        onSuccess={handleAddHomeSuccess}
-      />
-      <DeleteHomeModal
-        visible={deleteModal.visible}
-        homeId={deleteModal.homeId}
-        homeName={deleteModal.homeName}
-        onClose={() => setDeleteModal({ visible: false })}
-        onSuccess={handleDeleteSuccess}
-      />
-
-      {/* Token Error Banner */}
-      {tokenError && (
-        <View style={styles.errorBanner}>
-          <Ionicons name="warning-outline" size={16} color="#fff" />
-          <Text style={styles.errorText}>Session expired</Text>
-          <Pressable onPress={() => router.push("/(auth)/login")} style={styles.errorAction}>
-            <Text style={styles.errorActionText}>Login</Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={[styles.title, { color: text }]}>Homes</Text>
-          <View style={styles.subtitleRow}>
-            <Ionicons name="layers-outline" size={13} color={muted} />
-            <Text style={[styles.subtitle, { color: muted }]}>{homes.length} total</Text>
-          </View>
-        </View>
-        <TouchableOpacity
-          style={[styles.addBtn, { backgroundColor: "#0590b3" }]}
-          onPress={() => setAddModalVisible(true)}
-          activeOpacity={0.85}
-        >
-          <Ionicons name="add" size={22} color="#ffffff" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Search */}
-      <View style={[styles.searchBar, { borderColor: border, backgroundColor: `${muted}0A` }]}>
-        <Ionicons name="search-outline" size={17} color={muted} />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search homes..."
-          placeholderTextColor={muted}
-          style={[styles.searchInput, { color: text }]}
+    <SafeAreaView style={styles.safeArea}>
+      <View style={[styles.container, { backgroundColor: background }]}>
+        <AddHomeModal
+          visible={addModalVisible}
+          onClose={() => setAddModalVisible(false)}
+          onSuccess={handleAddHomeSuccess}
         />
-        {query.length > 0 && (
-          <TouchableOpacity onPress={() => setQuery("")}>
-            <Ionicons name="close-circle" size={17} color={muted} />
-          </TouchableOpacity>
-        )}
-      </View>
+        <DeleteHomeModal
+          visible={deleteModal.visible}
+          homeId={deleteModal.homeId}
+          homeName={deleteModal.homeName}
+          onClose={() => setDeleteModal({ visible: false })}
+          onSuccess={handleDeleteSuccess}
+        />
 
-      {/* States */}
-      {isLoading ? (
-        <View style={styles.center}>
-          <View style={[styles.stateIconWrap, { backgroundColor: `${tint}15` }]}>
-            <Ionicons name="reload-outline" size={28} color={tint} />
+        {/* Token Error Banner */}
+        {tokenError && (
+          <View style={styles.errorBanner}>
+            <Ionicons name="warning-outline" size={16} color="#fff" />
+            <Text style={styles.errorText}>Session expired</Text>
+            <Pressable onPress={() => router.push("/(auth)/login")} style={styles.errorAction}>
+              <Text style={styles.errorActionText}>Login</Text>
+            </Pressable>
           </View>
-          <Text style={[styles.stateText, { color: muted }]}>Loading homes…</Text>
+        )}
+
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={[styles.title, { color: text }]}>Homes</Text>
+            <View style={styles.subtitleRow}>
+              <Ionicons name="layers-outline" size={13} color={muted} />
+              <Text style={[styles.subtitle, { color: muted }]}>{homes.length} total</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[styles.addBtn, { backgroundColor: "#0590b3" }]}
+            onPress={() => setAddModalVisible(true)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="add" size={22} color="#ffffff" />
+          </TouchableOpacity>
         </View>
-      ) : filtered.length === 0 ? (
-        <View style={styles.center}>
-          <View style={[styles.stateIconWrap, { backgroundColor: `${muted}15` }]}>
-            <Ionicons name="home-outline" size={28} color={muted} />
-          </View>
-          <Text style={[styles.stateText, { color: muted }]}>
-            {query ? "No homes match your search" : "No homes yet"}
-          </Text>
-          {!query && (
-            <TouchableOpacity
-              style={[styles.emptyAction, { backgroundColor: "#0590b3" }]}
-              onPress={() => setAddModalVisible(true)}
-            >
-              <Ionicons name="add" size={16} color="#ffffff" />
-              <Text style={styles.emptyActionText}>Add your first home</Text>
+
+        {/* Search */}
+        <View style={[styles.searchBar, { borderColor: border, backgroundColor: `${muted}0A` }]}>
+          <Ionicons name="search-outline" size={17} color={muted} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search homes..."
+            placeholderTextColor={muted}
+            style={[styles.searchInput, { color: text }]}
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery("")}>
+              <Ionicons name="close-circle" size={17} color={muted} />
             </TouchableOpacity>
           )}
         </View>
-      ) : (
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 32 }}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
-    </View>
+
+        {/* States */}
+        {isLoading ? (
+          <View style={styles.center}>
+            <Loader color="#0590b3" />
+          </View>
+        ) : filtered.length === 0 ? (
+          <View style={styles.center}>
+            <View style={[styles.stateIconWrap, { backgroundColor: `${muted}15` }]}>
+              <Ionicons name="home-outline" size={28} color={muted} />
+            </View>
+            <Text style={[styles.stateText, { color: muted }]}>
+              {query ? "No homes match your search" : "No homes yet"}
+            </Text>
+            {!query && (
+              <TouchableOpacity
+                style={[styles.emptyAction, { backgroundColor: "#0590b3" }]}
+                onPress={() => setAddModalVisible(true)}
+              >
+                <Ionicons name="add" size={16} color="#ffffff" />
+                <Text style={styles.emptyActionText}>Add your first home</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => item._id}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 32 }}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </View>
+    </SafeAreaView>
+
   );
 }
 
 const styles = StyleSheet.create({
+    safeArea: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
+  },
   container: {
     flex: 1,
     paddingHorizontal: 16,

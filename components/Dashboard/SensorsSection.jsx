@@ -9,15 +9,19 @@ const SensorsSection = ({ sensors }) => {
     <>
       <Text style={styles.sectionTitle}>Sensors</Text>
 
-      <View style={styles.grid}>
-        {SENSORS.map((sensor) => (
-          <SensorCard
-            key={sensor.key}
-            sensor={sensor}
-            value={sensors?.[sensor.key]}
-          />
-        ))}
-      </View>
+  <View style={styles.grid}>
+  {SENSORS.map((sensor) => {
+    const val = sensors?.[sensor.key];
+
+    return (
+      <SensorCard
+        key={sensor.key}
+        sensor={sensor}
+        value={val}
+      />
+    );
+  })}
+</View>
     </>
   );
 };

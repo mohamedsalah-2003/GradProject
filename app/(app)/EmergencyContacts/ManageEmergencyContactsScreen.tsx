@@ -20,7 +20,8 @@ import {
   deleteEmergencyContact,
   getEmergencyContacts,
   updateEmergencyContact,
-}  from "@/services/emergencyContact.service";
+} from "@/services/emergencyContact.service";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 interface Contact {
@@ -216,269 +217,273 @@ export default function ManageEmergencyContactsScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: bg }]}>
-      <StatusBar barStyle="dark-content" backgroundColor={bg} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={[styles.backBtn, { backgroundColor: "#f0f0f0" }]}
-        >
-          <Ionicons name="chevron-back" size={20} color={text} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.title, { color: text }]}>Manage Contacts</Text>
-          <Text style={[styles.subtitle, { color: muted }]}>
-            {contacts.length} contact{contacts.length !== 1 ? "s" : ""}
-          </Text>
-        </View>
-        <TouchableOpacity
-          style={[styles.addBtn, { backgroundColor: tint }]}
-          onPress={openAdd}
-          activeOpacity={0.85}
-        >
-          <Ionicons name="add" size={22} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      <View style={[styles.container, { backgroundColor: bg }]}>
+        <StatusBar barStyle="dark-content" backgroundColor={bg} />
 
-      {/* List */}
-      {isLoading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={tint} />
-          <Text style={[styles.stateText, { color: muted }]}>Loading…</Text>
-        </View>
-      ) : contacts.length === 0 ? (
-        <View style={styles.center}>
-          <View style={[styles.emptyIconWrap, { backgroundColor: "#f0f0f0" }]}>
-            <Ionicons name="people-outline" size={32} color={muted} />
-          </View>
-          <Text style={[styles.stateText, { color: muted }]}>No contacts yet</Text>
+        {/* Header */}
+        <View style={styles.header}>
           <TouchableOpacity
-            style={[styles.addFirstBtn, { backgroundColor: tint }]}
-            onPress={openAdd}
+            onPress={() => router.back()}
+            style={[styles.backBtn, { backgroundColor: "#f0f0f0" }]}
           >
-            <Ionicons name="add" size={16} color="#fff" />
-            <Text style={styles.addFirstText}>Add first contact</Text>
+            <Ionicons name="chevron-back" size={20} color={text} />
+          </TouchableOpacity>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.title, { color: text }]}>Manage Contacts</Text>
+            <Text style={[styles.subtitle, { color: muted }]}>
+              {contacts.length} contact{contacts.length !== 1 ? "s" : ""}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.addBtn, { backgroundColor: tint }]}
+            onPress={openAdd}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="add" size={22} color="#fff" />
           </TouchableOpacity>
         </View>
-      ) : (
-        <FlatList
-          data={contacts}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
 
-      {/* ── Add / Edit Modal ── */}
-      <Modal
-        visible={modalVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={closeModal}
-      >
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
+        {/* List */}
+        {isLoading ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={tint} />
+            <Text style={[styles.stateText, { color: muted }]}>Loading…</Text>
+          </View>
+        ) : contacts.length === 0 ? (
+          <View style={styles.center}>
+            <View style={[styles.emptyIconWrap, { backgroundColor: "#f0f0f0" }]}>
+              <Ionicons name="people-outline" size={32} color={muted} />
+            </View>
+            <Text style={[styles.stateText, { color: muted }]}>No contacts yet</Text>
+            <TouchableOpacity
+              style={[styles.addFirstBtn, { backgroundColor: tint }]}
+              onPress={openAdd}
+            >
+              <Ionicons name="add" size={16} color="#fff" />
+              <Text style={styles.addFirstText}>Add first contact</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={contacts}
+            keyExtractor={(item) => item._id}
+            renderItem={renderItem}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+
+        {/* ── Add / Edit Modal ── */}
+        <Modal
+          visible={modalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={closeModal}
         >
-          <View style={styles.overlay}>
-            <View style={[styles.sheet, { backgroundColor: card }]}>
-              {/* Handle */}
-              <View style={styles.handle} />
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1 }}
+          >
+            <View style={styles.overlay}>
+              <View style={[styles.sheet, { backgroundColor: card }]}>
+                {/* Handle */}
+                <View style={styles.handle} />
 
-              {/* Sheet header */}
-              <View style={[styles.sheetHeader, { borderBottomColor: border }]}>
-                <View style={[styles.sheetIcon, { backgroundColor: `${tint}18` }]}>
-                  <Ionicons
-                    name={modalMode === "add" ? "person-add-outline" : "pencil-outline"}
-                    size={17}
-                    color={tint}
-                  />
-                </View>
-                <Text style={[styles.sheetTitle, { color: text }]}>
-                  {modalMode === "add" ? "Add Contact" : "Edit Contact"}
-                </Text>
-                <TouchableOpacity
-                  onPress={closeModal}
-                  style={[styles.closeBtn, { backgroundColor: "#f0f0f0" }]}
-                  disabled={isSaving}
-                >
-                  <Ionicons name="close" size={17} color={text} />
-                </TouchableOpacity>
-              </View>
-
-              {/* Fields */}
-              <View style={styles.sheetBody}>
-                {saveMessage && (
-                  <View
-                    style={[
-                      styles.messageBanner,
-                      {
-                        backgroundColor:
-                          saveMessage.type === "success" ? "#22c55e18" : "#ff3b3018",
-                      },
-                    ]}
-                  >
+                {/* Sheet header */}
+                <View style={[styles.sheetHeader, { borderBottomColor: border }]}>
+                  <View style={[styles.sheetIcon, { backgroundColor: `${tint}18` }]}>
                     <Ionicons
-                      name={saveMessage.type === "success" ? "checkmark-circle" : "alert-circle"}
-                      size={15}
-                      color={saveMessage.type === "success" ? "#22c55e" : "#ff3b30"}
+                      name={modalMode === "add" ? "person-add-outline" : "pencil-outline"}
+                      size={17}
+                      color={tint}
                     />
-                    <Text
+                  </View>
+                  <Text style={[styles.sheetTitle, { color: text }]}>
+                    {modalMode === "add" ? "Add Contact" : "Edit Contact"}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={closeModal}
+                    style={[styles.closeBtn, { backgroundColor: "#f0f0f0" }]}
+                    disabled={isSaving}
+                  >
+                    <Ionicons name="close" size={17} color={text} />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Fields */}
+                <View style={styles.sheetBody}>
+                  {saveMessage && (
+                    <View
                       style={[
-                        styles.messageText,
+                        styles.messageBanner,
                         {
-                          color: saveMessage.type === "success" ? "#22c55e" : "#ff3b30",
+                          backgroundColor:
+                            saveMessage.type === "success" ? "#22c55e18" : "#ff3b3018",
                         },
                       ]}
                     >
-                      {saveMessage.text}
-                    </Text>
-                  </View>
-                )}
-
-                {/* Name */}
-                <View style={styles.field}>
-                  <Text style={[styles.fieldLabel, { color: text }]}>Full Name</Text>
-                  <View
-                    style={[
-                      styles.inputWrap,
-                      { borderColor: formErrors.name ? "#ff3b30" : border },
-                    ]}
-                  >
-                    <Ionicons name="person-outline" size={16} color={muted} />
-                    <TextInput
-                      style={[styles.input, { color: text }]}
-                      placeholder="e.g. John Doe"
-                      placeholderTextColor={muted}
-                      value={formName}
-                      onChangeText={(v) => {
-                        setFormName(v);
-                        if (formErrors.name) setFormErrors((p) => ({ ...p, name: undefined }));
-                      }}
-                      editable={!isSaving}
-                    />
-                  </View>
-                  {formErrors.name && (
-                    <Text style={styles.errText}>{formErrors.name}</Text>
+                      <Ionicons
+                        name={saveMessage.type === "success" ? "checkmark-circle" : "alert-circle"}
+                        size={15}
+                        color={saveMessage.type === "success" ? "#22c55e" : "#ff3b30"}
+                      />
+                      <Text
+                        style={[
+                          styles.messageText,
+                          {
+                            color: saveMessage.type === "success" ? "#22c55e" : "#ff3b30",
+                          },
+                        ]}
+                      >
+                        {saveMessage.text}
+                      </Text>
+                    </View>
                   )}
+
+                  {/* Name */}
+                  <View style={styles.field}>
+                    <Text style={[styles.fieldLabel, { color: text }]}>Full Name</Text>
+                    <View
+                      style={[
+                        styles.inputWrap,
+                        { borderColor: formErrors.name ? "#ff3b30" : border },
+                      ]}
+                    >
+                      <Ionicons name="person-outline" size={16} color={muted} />
+                      <TextInput
+                        style={[styles.input, { color: text }]}
+                        placeholder="e.g. John Doe"
+                        placeholderTextColor={muted}
+                        value={formName}
+                        onChangeText={(v) => {
+                          setFormName(v);
+                          if (formErrors.name) setFormErrors((p) => ({ ...p, name: undefined }));
+                        }}
+                        editable={!isSaving}
+                      />
+                    </View>
+                    {formErrors.name && (
+                      <Text style={styles.errText}>{formErrors.name}</Text>
+                    )}
+                  </View>
+
+                  {/* Phone */}
+                  <View style={styles.field}>
+                    <Text style={[styles.fieldLabel, { color: text }]}>Phone Number</Text>
+                    <View
+                      style={[
+                        styles.inputWrap,
+                        { borderColor: formErrors.phone ? "#ff3b30" : border },
+                      ]}
+                    >
+                      <Ionicons name="call-outline" size={16} color={muted} />
+                      <TextInput
+                        style={[styles.input, { color: text }]}
+                        placeholder="e.g. +1 555 000 0000"
+                        placeholderTextColor={muted}
+                        value={formPhone}
+                        onChangeText={(v) => {
+                          setFormPhone(v);
+                          if (formErrors.phone) setFormErrors((p) => ({ ...p, phone: undefined }));
+                        }}
+                        keyboardType="phone-pad"
+                        editable={!isSaving}
+                      />
+                    </View>
+                    {formErrors.phone && (
+                      <Text style={styles.errText}>{formErrors.phone}</Text>
+                    )}
+                  </View>
                 </View>
 
-                {/* Phone */}
-                <View style={styles.field}>
-                  <Text style={[styles.fieldLabel, { color: text }]}>Phone Number</Text>
-                  <View
-                    style={[
-                      styles.inputWrap,
-                      { borderColor: formErrors.phone ? "#ff3b30" : border },
-                    ]}
+                {/* Footer */}
+                <View style={[styles.sheetFooter, { borderTopColor: border }]}>
+                  <TouchableOpacity
+                    style={[styles.cancelBtn, { borderColor: border }]}
+                    onPress={closeModal}
+                    disabled={isSaving}
                   >
-                    <Ionicons name="call-outline" size={16} color={muted} />
-                    <TextInput
-                      style={[styles.input, { color: text }]}
-                      placeholder="e.g. +1 555 000 0000"
-                      placeholderTextColor={muted}
-                      value={formPhone}
-                      onChangeText={(v) => {
-                        setFormPhone(v);
-                        if (formErrors.phone) setFormErrors((p) => ({ ...p, phone: undefined }));
-                      }}
-                      keyboardType="phone-pad"
-                      editable={!isSaving}
-                    />
-                  </View>
-                  {formErrors.phone && (
-                    <Text style={styles.errText}>{formErrors.phone}</Text>
-                  )}
+                    <Text style={[styles.cancelText, { color: text }]}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.saveBtn,
+                      { backgroundColor: tint },
+                      isSaving && { opacity: 0.7 },
+                    ]}
+                    onPress={handleSave}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <ActivityIndicator color="#fff" size="small" />
+                    ) : (
+                      <>
+                        <Ionicons
+                          name={modalMode === "add" ? "add" : "checkmark"}
+                          size={18}
+                          color="#fff"
+                        />
+                        <Text style={styles.saveText}>
+                          {modalMode === "add" ? "Add Contact" : "Save Changes"}
+                        </Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
                 </View>
               </View>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
 
-              {/* Footer */}
-              <View style={[styles.sheetFooter, { borderTopColor: border }]}>
+        {/* ── Delete Confirm Modal ── */}
+        <Modal
+          visible={!!deleteTarget}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setDeleteTarget(null)}
+        >
+          <View style={styles.confirmOverlay}>
+            <View style={[styles.confirmSheet, { backgroundColor: card }]}>
+              <View style={[styles.confirmIconWrap, { backgroundColor: "#ff3b3015" }]}>
+                <Ionicons name="trash-outline" size={26} color="#ff3b30" />
+              </View>
+              <Text style={[styles.confirmTitle, { color: text }]}>Remove Contact</Text>
+              <Text style={[styles.confirmBody, { color: muted }]}>
+                Remove{" "}
+                <Text style={{ color: text, fontWeight: "700" }}>{deleteTarget?.name}</Text>{" "}
+                from your emergency contacts?
+              </Text>
+              <View style={styles.confirmBtns}>
                 <TouchableOpacity
-                  style={[styles.cancelBtn, { borderColor: border }]}
-                  onPress={closeModal}
-                  disabled={isSaving}
+                  style={[styles.cancelBtn, { borderColor: border, flex: 1 }]}
+                  onPress={() => setDeleteTarget(null)}
+                  disabled={isDeleting}
                 >
                   <Text style={[styles.cancelText, { color: text }]}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[
-                    styles.saveBtn,
-                    { backgroundColor: tint },
-                    isSaving && { opacity: 0.7 },
-                  ]}
-                  onPress={handleSave}
-                  disabled={isSaving}
+                  style={[styles.deleteConfirmBtn, isDeleting && { opacity: 0.7 }]}
+                  onPress={handleDelete}
+                  disabled={isDeleting}
                 >
-                  {isSaving ? (
+                  {isDeleting ? (
                     <ActivityIndicator color="#fff" size="small" />
                   ) : (
                     <>
-                      <Ionicons
-                        name={modalMode === "add" ? "add" : "checkmark"}
-                        size={18}
-                        color="#fff"
-                      />
-                      <Text style={styles.saveText}>
-                        {modalMode === "add" ? "Add Contact" : "Save Changes"}
-                      </Text>
+                      <Ionicons name="trash-outline" size={16} color="#fff" />
+                      <Text style={styles.deleteConfirmText}>Remove</Text>
                     </>
                   )}
                 </TouchableOpacity>
               </View>
             </View>
           </View>
-        </KeyboardAvoidingView>
-      </Modal>
+        </Modal>
+      </View>
 
-      {/* ── Delete Confirm Modal ── */}
-      <Modal
-        visible={!!deleteTarget}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setDeleteTarget(null)}
-      >
-        <View style={styles.confirmOverlay}>
-          <View style={[styles.confirmSheet, { backgroundColor: card }]}>
-            <View style={[styles.confirmIconWrap, { backgroundColor: "#ff3b3015" }]}>
-              <Ionicons name="trash-outline" size={26} color="#ff3b30" />
-            </View>
-            <Text style={[styles.confirmTitle, { color: text }]}>Remove Contact</Text>
-            <Text style={[styles.confirmBody, { color: muted }]}>
-              Remove{" "}
-              <Text style={{ color: text, fontWeight: "700" }}>{deleteTarget?.name}</Text>{" "}
-              from your emergency contacts?
-            </Text>
-            <View style={styles.confirmBtns}>
-              <TouchableOpacity
-                style={[styles.cancelBtn, { borderColor: border, flex: 1 }]}
-                onPress={() => setDeleteTarget(null)}
-                disabled={isDeleting}
-              >
-                <Text style={[styles.cancelText, { color: text }]}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.deleteConfirmBtn, isDeleting && { opacity: 0.7 }]}
-                onPress={handleDelete}
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <>
-                    <Ionicons name="trash-outline" size={16} color="#fff" />
-                    <Text style={styles.deleteConfirmText}>Remove</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 

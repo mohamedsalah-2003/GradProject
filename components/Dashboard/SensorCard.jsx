@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
 import { C } from "../../constants/colors";
 
 const SensorCard = ({ sensor, value }) => {
+
   const { width } = useWindowDimensions(); // ✅ reactive
   const cardWidth = (width - 48 - 12) / 2;
 
@@ -18,7 +19,7 @@ const SensorCard = ({ sensor, value }) => {
     display === "Detected";
 
   return (
-    <View style={[styles.card, { width: cardWidth }]}> {/* ✅ inline */}
+    <View style={[styles.card, { width: cardWidth }]}> 
       <View style={[styles.iconWrapper, { backgroundColor: sensor.bg }]}>
         {sensor.icon(sensor.color)}
       </View>
@@ -37,7 +38,7 @@ const SensorCard = ({ sensor, value }) => {
 
 const styles = StyleSheet.create({
   card: {
-    // width شالناها من هنا وحطيناها inline
+
     backgroundColor: C.card,
     borderRadius: 16,
     padding: 16,

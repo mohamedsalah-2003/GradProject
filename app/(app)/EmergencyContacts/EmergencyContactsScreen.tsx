@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { getEmergencyContacts } from "@/services/emergencyContact.service";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Contact {
   _id: string;
@@ -50,8 +51,8 @@ export default function EmergencyContactsScreen() {
     try {
       setIsLoading(true);
       const data = await getEmergencyContacts();
-      console.log(data);
-      
+
+
       setContacts(data.emergencyContacts);
     } catch (err) {
       console.error(err);
@@ -119,73 +120,75 @@ export default function EmergencyContactsScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: bg }]}>
-      <StatusBar barStyle="dark-content" backgroundColor={bg} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: bg }}>
+      <View style={[styles.container, { backgroundColor: bg }]}>
+        <StatusBar barStyle="dark-content" backgroundColor={bg} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={[styles.backBtn, { backgroundColor: "#f0f0f0" }]}
-        >
-          <Ionicons name="chevron-back" size={20} color={text} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.title, { color: text }]}>Emergency Contacts</Text>
-          <Text style={[styles.subtitle, { color: muted }]}>
-            {contacts.length} contact{contacts.length !== 1 ? "s" : ""}
-          </Text>
-        </View>
-        <TouchableOpacity
-          style={[styles.manageBtn, { backgroundColor: tint }]}
-          onPress={() => router.push("/(app)/EmergencyContacts/ManageEmergencyContactsScreen" as any)}
-          activeOpacity={0.85}
-        >
-          <Ionicons name="settings-outline" size={16} color="#fff" />
-          <Text style={styles.manageBtnText}>Manage</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* SOS Banner */}
-      <View style={[styles.sosBanner, { backgroundColor: "#fff1f1", borderColor: "#fecaca" }]}>
-        <View style={styles.sosLeft}>
-          <Ionicons name="warning-outline" size={18} color="#ef4444" />
-          <Text style={[styles.sosText, { color: "#ef4444" }]}>
-            In an emergency, tap any contact to call immediately
-          </Text>
-        </View>
-      </View>
-
-      {/* List */}
-      {isLoading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={tint} />
-          <Text style={[styles.stateText, { color: muted }]}>Loading contacts…</Text>
-        </View>
-      ) : contacts.length === 0 ? (
-        <View style={styles.center}>
-          <View style={[styles.emptyIconWrap, { backgroundColor: "#f0f0f0" }]}>
-            <Ionicons name="people-outline" size={32} color={muted} />
-          </View>
-          <Text style={[styles.stateText, { color: muted }]}>No emergency contacts yet</Text>
+        {/* Header */}
+        <View style={styles.header}>
           <TouchableOpacity
-            style={[styles.addFirstBtn, { backgroundColor: tint }]}
-            onPress={() => router.push("/(app)/EmergencyContacts/ManageEmergencyContactsScreen" as any)}
+            onPress={() => router.back()}
+            style={[styles.backBtn, { backgroundColor: "#f0f0f0" }]}
           >
-            <Ionicons name="add" size={16} color="#fff" />
-            <Text style={styles.addFirstText}>Add a contact</Text>
+            <Ionicons name="chevron-back" size={20} color={text} />
+          </TouchableOpacity>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.title, { color: text }]}>Emergency Contacts</Text>
+            <Text style={[styles.subtitle, { color: muted }]}>
+              {contacts.length} contact{contacts.length !== 1 ? "s" : ""}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.manageBtn, { backgroundColor: tint }]}
+            onPress={() => router.push("/(app)/EmergencyContacts/ManageEmergencyContactsScreen" as any)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="settings-outline" size={16} color="#fff" />
+            <Text style={styles.manageBtnText}>Manage</Text>
           </TouchableOpacity>
         </View>
-      ) : (
-        <FlatList
-          data={contacts}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
-    </View>
+
+        {/* SOS Banner */}
+        <View style={[styles.sosBanner, { backgroundColor: "#fff1f1", borderColor: "#fecaca" }]}>
+          <View style={styles.sosLeft}>
+            <Ionicons name="warning-outline" size={18} color="#ef4444" />
+            <Text style={[styles.sosText, { color: "#ef4444" }]}>
+              In an emergency, tap any contact to call immediately
+            </Text>
+          </View>
+        </View>
+
+        {/* List */}
+        {isLoading ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={tint} />
+            <Text style={[styles.stateText, { color: muted }]}>Loading contacts…</Text>
+          </View>
+        ) : contacts.length === 0 ? (
+          <View style={styles.center}>
+            <View style={[styles.emptyIconWrap, { backgroundColor: "#f0f0f0" }]}>
+              <Ionicons name="people-outline" size={32} color={muted} />
+            </View>
+            <Text style={[styles.stateText, { color: muted }]}>No emergency contacts yet</Text>
+            <TouchableOpacity
+              style={[styles.addFirstBtn, { backgroundColor: tint }]}
+              onPress={() => router.push("/(app)/EmergencyContacts/ManageEmergencyContactsScreen" as any)}
+            >
+              <Ionicons name="add" size={16} color="#fff" />
+              <Text style={styles.addFirstText}>Add a contact</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={contacts}
+            keyExtractor={(item) => item._id}
+            renderItem={renderItem}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 }
 

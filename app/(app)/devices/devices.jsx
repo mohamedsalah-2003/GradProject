@@ -14,10 +14,12 @@ import {
 
 import AddDeviceModal from "@/components/Devices/AddDeviceModal";
 import DeleteDeviceModal from "@/components/Devices/DeleteDeviceModal";
-import { ThemedText } from "@/components/themed-text";
+import Loader from "../../../components/ui/Loader";
 import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { getAllDevices } from "../../../services/devices.service";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 
 export default function DevicesScreen() {
   const router = useRouter();
@@ -27,7 +29,7 @@ export default function DevicesScreen() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDeviceId, setSelectedDeviceId] = useState(null);
   const [selectedDeviceName, setSelectedDeviceName] = useState("");
-
+  const [isLoaded, setIsLoaded] = useState(false);
   const background = "#ffffff";
   const text = "#111111";
   const muted = "#888888";
@@ -36,12 +38,14 @@ export default function DevicesScreen() {
   const card = "#f9fafb" ?? background;
 
   const fetchDevices = async () => {
+    setIsLoaded(true);
     try {
       const data = await getAllDevices();
       setDevices(data.devices || []);
     } catch (err) {
       console.log(err);
     }
+    setIsLoaded(false);
   };
 
   useEffect(() => { fetchDevices(); }, []);
@@ -147,102 +151,108 @@ export default function DevicesScreen() {
   );
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: background }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.push("/(app)/dashboard")}
-          style={[styles.backBtn, { backgroundColor: `${muted}12` }]}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="chevron-back" size={20} color={text} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.title, { color: text }]}>Devices</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statChip}>
-              <View style={[styles.statDot, { backgroundColor: "#22c55e" }]} />
-              <Text style={[styles.statText, { color: muted }]}>{onlineCount} active</Text>
-            </View>
-            <Text style={[styles.statSep, { color: muted }]}>·</Text>
-            <View style={styles.statChip}>
-              <Ionicons name="layers-outline" size={12} color={muted} />
-              <Text style={[styles.statText, { color: muted }]}>{devices.length} total</Text>
-            </View>
-          </View>
-        </View>
-        <TouchableOpacity
-          style={[styles.addBtn, { backgroundColor: tint }]}
-          onPress={() => setShowAddModal(true)}
-          activeOpacity={0.85}
-        >
-          <Ionicons name="add" size={22} color="#fff" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Search */}
-      <View style={[styles.searchBar, { borderColor: border, backgroundColor: `${muted}0A` }]}>
-        <Ionicons name="search-outline" size={17} color={muted} />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search devices..."
-          placeholderTextColor={muted}
-          style={[styles.searchInput, { color: text }]}
-        />
-        {query.length > 0 && (
-          <TouchableOpacity onPress={() => setQuery("")}>
-            <Ionicons name="close-circle" size={17} color={muted} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: background }}>
+      <ThemedView style={[styles.container, { backgroundColor: background }]}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.push("/(app)/dashboard")}
+            style={[styles.backBtn, { backgroundColor: `${muted}12` }]}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="chevron-back" size={20} color={text} />
           </TouchableOpacity>
-        )}
-      </View>
-
-      {/* List */}
-      {filtered.length === 0 ? (
-        <View style={styles.center}>
-          <View style={[styles.stateIconWrap, { backgroundColor: `${muted}15` }]}>
-            <Ionicons name="hardware-chip-outline" size={28} color={muted} />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.title, { color: text }]}>Devices</Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statChip}>
+                <View style={[styles.statDot, { backgroundColor: "#22c55e" }]} />
+                <Text style={[styles.statText, { color: muted }]}>{onlineCount} active</Text>
+              </View>
+              <Text style={[styles.statSep, { color: muted }]}>·</Text>
+              <View style={styles.statChip}>
+                <Ionicons name="layers-outline" size={12} color={muted} />
+                <Text style={[styles.statText, { color: muted }]}>{devices.length} total</Text>
+              </View>
+            </View>
           </View>
-          <Text style={[styles.stateText, { color: muted }]}>
-            {query ? "No devices match your search" : "No devices yet"}
-          </Text>
-          {!query && (
-            <TouchableOpacity
-              style={[styles.emptyAction, { backgroundColor: tint }]}
-              onPress={() => setShowAddModal(true)}
-            >
-              <Ionicons name="add" size={16} color="#fff" />
-              <Text style={styles.emptyActionText}>Add your first device</Text>
+          <TouchableOpacity
+            style={[styles.addBtn, { backgroundColor: tint }]}
+            onPress={() => setShowAddModal(true)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="add" size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Search */}
+        <View style={[styles.searchBar, { borderColor: border, backgroundColor: `${muted}0A` }]}>
+          <Ionicons name="search-outline" size={17} color={muted} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search devices..."
+            placeholderTextColor={muted}
+            style={[styles.searchInput, { color: text }]}
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery("")}>
+              <Ionicons name="close-circle" size={17} color={muted} />
             </TouchableOpacity>
           )}
         </View>
-      ) : (
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item._id}
-          renderItem={renderItem}
-          contentContainerStyle={{ paddingBottom: 32 }}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
 
-      <AddDeviceModal
-        visible={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSuccess={fetchDevices}
-      />
-      <DeleteDeviceModal
-        visible={showDeleteModal}
-        deviceId={selectedDeviceId}
-        deviceName={selectedDeviceName}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setSelectedDeviceId(null);
-          setSelectedDeviceName("");
-        }}
-        onSuccess={fetchDevices}
-      />
-    </ThemedView>
+        {/* List */}
+        {isLoaded ? (
+          <View style={styles.center}>
+            <Loader size="large" color="#0590b3" />
+          </View>
+        ) : filtered.length === 0 ? (
+          <View style={styles.center}>
+            <View style={[styles.stateIconWrap, { backgroundColor: `${muted}15` }]}>
+              <Ionicons name="hardware-chip-outline" size={28} color={muted} />
+            </View>
+            <Text style={[styles.stateText, { color: muted }]}>
+              {query ? "No devices match your search" : "No devices yet"}
+            </Text>
+            {!query && (
+              <TouchableOpacity
+                style={[styles.emptyAction, { backgroundColor: tint }]}
+                onPress={() => setShowAddModal(true)}
+              >
+                <Ionicons name="add" size={16} color="#fff" />
+                <Text style={styles.emptyActionText}>Add your first device</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <FlatList
+            data={filtered}
+            keyExtractor={(item) => item._id}
+            renderItem={renderItem}
+            contentContainerStyle={{ paddingBottom: 32 }}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+
+        <AddDeviceModal
+          visible={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={fetchDevices}
+        />
+        <DeleteDeviceModal
+          visible={showDeleteModal}
+          deviceId={selectedDeviceId}
+          deviceName={selectedDeviceName}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setSelectedDeviceId(null);
+            setSelectedDeviceName("");
+          }}
+          onSuccess={fetchDevices}
+        />
+      </ThemedView>
+    </SafeAreaView>
   );
 }
 
