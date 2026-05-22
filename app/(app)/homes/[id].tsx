@@ -18,6 +18,7 @@ import DeleteDeviceModal from "@/components/Devices/DeleteDeviceModal";
 import { ThemedView } from "@/components/themed-view";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { getHomeById, getHomeDevices } from "@/services/homes.service";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Device {
   _id: string;
@@ -55,12 +56,13 @@ export default function HomeDevicesScreen() {
   const [selectedDeviceName, setSelectedDeviceName] = useState("");
   const [tokenError, setTokenError] = useState(false);
 
-  const background = "#ffffff";
+  const background = "#F8FAFC"
+
   const text = "#111111";
   const muted = "#888888";
   const border = "#e5e5e5";
   const tint = "#0590b3";
-  const card = "#f9fafb" ;
+  const card = "#f9fafb";
 
   useEffect(() => {
     if (id) {
@@ -102,256 +104,258 @@ export default function HomeDevicesScreen() {
   const onlineCount = devices.filter((d) => d.isActive).length;
 
   return (
-    <ThemedView style={[styles.container, { backgroundColor: background }]}>
-      {/* Error Banner */}
-      {tokenError && (
-        <View style={styles.errorBanner}>
-          <Ionicons name="warning-outline" size={15} color="#fff" />
-          <Text style={styles.errorText}>Session expired</Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(auth)/login" as any)}
-            style={styles.errorAction}
-          >
-            <Text style={styles.errorActionText}>Login</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Top Bar */}
-      <View
-        style={[
-          styles.topBar,
-          { borderBottomColor: border, paddingTop: StatusBar.currentHeight || 20 },
-        ]}
-      >
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={22} color={text} />
-        </TouchableOpacity>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.topBarTitle, { color: text }]} numberOfLines={1}>
-            {homeName || "Home Details"}
-          </Text>
-          <View style={styles.topBarMeta}>
-            <View style={[styles.onlineDot, { backgroundColor: onlineCount > 0 ? "#22c55e" : muted }]} />
-            <Text style={[styles.topBarSubtitle, { color: muted }]}>
-              {onlineCount} online · {devices.length} total
-            </Text>
-          </View>
-        </View>
-        <TouchableOpacity
-          style={[styles.addBtn, { backgroundColor: tint }]}
-          onPress={() => setShowAddModal(true)}
-          activeOpacity={0.85}
-        >
-          <Ionicons name="add" size={22} color="#fff" />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
-      >
-        {/* Home Info Card */}
-        {homeDetails && (
-          <View style={[styles.homeCard, { backgroundColor: `${tint}0C`, borderColor: border }]}>
-            <View style={styles.homeCardTop}>
-              <View style={[styles.homeIconWrap, { backgroundColor: `${tint}20` }]}>
-                <Ionicons name="home-outline" size={22} color={tint} />
-              </View>
-              <View style={{ flex: 1, gap: 4 }}>
-                <Text style={[styles.homeName, { color: text }]}>{homeDetails.name}</Text>
-                {homeDetails.location && (
-                  <View style={styles.infoRow}>
-                    <Ionicons name="location-outline" size={12} color={muted} />
-                    <Text style={[styles.infoText, { color: muted }]}>{homeDetails.location}</Text>
-                  </View>
-                )}
-                {homeDetails.address && (
-                  <View style={styles.infoRow}>
-                    <Ionicons name="map-outline" size={12} color={muted} />
-                    <Text style={[styles.infoText, { color: muted }]}>
-                      {homeDetails.address}
-                      {homeDetails.city ? `, ${homeDetails.city}` : ""}
-                      {homeDetails.country ? `, ${homeDetails.country}` : ""}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-
-            {homeDetails.description && (
-              <Text style={[styles.homeDescription, { color: muted, borderTopColor: border }]}>
-                {homeDetails.description}
-              </Text>
-            )}
-
-            <View style={[styles.homeFooter, { borderTopColor: border }]}>
-              <Ionicons name="calendar-outline" size={11} color={muted} />
-              <Text style={[styles.homeFooterText, { color: muted }]}>
-                Created {new Date(homeDetails.createdAt).toLocaleDateString()}
-              </Text>
-            </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor:"#F8FAFC"}}>
+      <ThemedView style={[styles.container, { backgroundColor: background }]}>
+        {/* Error Banner */}
+        {tokenError && (
+          <View style={styles.errorBanner}>
+            <Ionicons name="warning-outline" size={15} color="#fff" />
+            <Text style={styles.errorText}>Session expired</Text>
+            <TouchableOpacity
+              onPress={() => router.push("/(auth)/login" as any)}
+              style={styles.errorAction}
+            >
+              <Text style={styles.errorActionText}>Login</Text>
+            </TouchableOpacity>
           </View>
         )}
 
-        {/* Devices Section Label */}
-        <View style={styles.sectionLabel}>
-          <Ionicons name="hardware-chip-outline" size={14} color={muted} />
-          <Text style={[styles.sectionLabelText, { color: muted }]}>Devices</Text>
-        </View>
-
-        {/* Search */}
-        <View style={[styles.searchBar, { borderColor: border, backgroundColor: `${muted}0A` }]}>
-          <Ionicons name="search-outline" size={16} color={muted} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search devices..."
-            placeholderTextColor={muted}
-            style={[styles.searchInput, { color: text }]}
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery("")}>
-              <Ionicons name="close-circle" size={16} color={muted} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Device List */}
-        {isLoading ? (
-          <View style={styles.center}>
-            <ActivityIndicator size="large" color={tint} />
-            <Text style={[styles.stateText, { color: muted }]}>Loading devices…</Text>
-          </View>
-        ) : filtered.length === 0 ? (
-          <View style={styles.center}>
-            <View style={[styles.stateIconWrap, { backgroundColor: `${muted}15` }]}>
-              <Ionicons name="hardware-chip-outline" size={28} color={muted} />
-            </View>
-            <Text style={[styles.stateText, { color: muted }]}>
-              {query ? "No devices match your search" : "No devices in this home"}
+        {/* Top Bar */}
+        <View
+          style={[
+            styles.topBar,
+            { borderBottomColor: border, paddingTop: StatusBar.currentHeight || 20 },
+          ]}
+        >
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Ionicons name="chevron-back" size={22} color={text} />
+          </TouchableOpacity>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.topBarTitle, { color: text }]} numberOfLines={1}>
+              {homeName || "Home Details"}
             </Text>
-            {!query && (
-              <TouchableOpacity
-                style={[styles.emptyAction, { backgroundColor: tint }]}
-                onPress={() => setShowAddModal(true)}
-              >
-                <Ionicons name="add" size={16} color="#fff" />
-                <Text style={styles.emptyActionText}>Add a device</Text>
+            <View style={styles.topBarMeta}>
+              <View style={[styles.onlineDot, { backgroundColor: onlineCount > 0 ? "#22c55e" : muted }]} />
+              <Text style={[styles.topBarSubtitle, { color: muted }]}>
+                {onlineCount} online · {devices.length} total
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={[styles.addBtn, { backgroundColor: tint }]}
+            onPress={() => setShowAddModal(true)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="add" size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scroll}
+        >
+          {/* Home Info Card */}
+          {homeDetails && (
+            <View style={[styles.homeCard, { backgroundColor: `${tint}0C`, borderColor: border }]}>
+              <View style={styles.homeCardTop}>
+                <View style={[styles.homeIconWrap, { backgroundColor: `${tint}20` }]}>
+                  <Ionicons name="home-outline" size={22} color={tint} />
+                </View>
+                <View style={{ flex: 1, gap: 4 }}>
+                  <Text style={[styles.homeName, { color: text }]}>{homeDetails.name}</Text>
+                  {homeDetails.location && (
+                    <View style={styles.infoRow}>
+                      <Ionicons name="location-outline" size={12} color={muted} />
+                      <Text style={[styles.infoText, { color: muted }]}>{homeDetails.location}</Text>
+                    </View>
+                  )}
+                  {homeDetails.address && (
+                    <View style={styles.infoRow}>
+                      <Ionicons name="map-outline" size={12} color={muted} />
+                      <Text style={[styles.infoText, { color: muted }]}>
+                        {homeDetails.address}
+                        {homeDetails.city ? `, ${homeDetails.city}` : ""}
+                        {homeDetails.country ? `, ${homeDetails.country}` : ""}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              {homeDetails.description && (
+                <Text style={[styles.homeDescription, { color: muted, borderTopColor: border }]}>
+                  {homeDetails.description}
+                </Text>
+              )}
+
+              <View style={[styles.homeFooter, { borderTopColor: border }]}>
+                <Ionicons name="calendar-outline" size={11} color={muted} />
+                <Text style={[styles.homeFooterText, { color: muted }]}>
+                  Created {new Date(homeDetails.createdAt).toLocaleDateString()}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Devices Section Label */}
+          <View style={styles.sectionLabel}>
+            <Ionicons name="hardware-chip-outline" size={14} color={muted} />
+            <Text style={[styles.sectionLabelText, { color: muted }]}>Devices</Text>
+          </View>
+
+          {/* Search */}
+          <View style={[styles.searchBar, { borderColor: border, backgroundColor: `${muted}0A` }]}>
+            <Ionicons name="search-outline" size={16} color={muted} />
+            <TextInput
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Search devices..."
+              placeholderTextColor={muted}
+              style={[styles.searchInput, { color: text }]}
+            />
+            {query.length > 0 && (
+              <TouchableOpacity onPress={() => setQuery("")}>
+                <Ionicons name="close-circle" size={16} color={muted} />
               </TouchableOpacity>
             )}
           </View>
-        ) : (
-          <View style={styles.deviceList}>
-            {filtered.map((item, index) => (
-              <Pressable
-                key={item._id}
-                onPress={() => router.push(`/(app)/devices/${item._id}` as any)}
-                style={({ pressed }) => [
-                  styles.cardPressable,
-                  pressed && styles.cardPressed,
-                ]}
-              >
-                <View style={[styles.card, { backgroundColor: card, borderColor: border }]}>
-                  <View style={styles.cardTop}>
-                    {/* Icon with status dot */}
-                    <View style={styles.iconArea}>
-                      <View style={[styles.iconWrap, { backgroundColor: `${tint}18` }]}>
-                        <Ionicons name="hardware-chip-outline" size={20} color={tint} />
-                      </View>
-                      <View
-                        style={[
-                          styles.statusDot,
-                          { backgroundColor: item.isActive ? "#22c55e" : "#ff3b30" },
-                        ]}
-                      />
-                    </View>
 
-                    {/* Info */}
-                    <View style={styles.cardInfo}>
-                      <Text style={[styles.deviceName, { color: text }]} numberOfLines={1}>
-                        {item.name}
-                      </Text>
-                      <View style={styles.metaRow}>
-                        <Ionicons name="location-outline" size={11} color={muted} />
-                        <Text style={[styles.metaText, { color: muted }]} numberOfLines={1}>
-                          {item.location}
-                        </Text>
-                      </View>
-                    </View>
-
-                    {/* Right */}
-                    <View style={styles.cardRight}>
-                      <View
-                        style={[
-                          styles.statusBadge,
-                          { backgroundColor: item.isActive ? "#22c55e18" : "#ff3b3018" },
-                        ]}
-                      >
-                        <Text
+          {/* Device List */}
+          {isLoading ? (
+            <View style={styles.center}>
+              <ActivityIndicator size="large" color={tint} />
+              <Text style={[styles.stateText, { color: muted }]}>Loading devices…</Text>
+            </View>
+          ) : filtered.length === 0 ? (
+            <View style={styles.center}>
+              <View style={[styles.stateIconWrap, { backgroundColor: `${muted}15` }]}>
+                <Ionicons name="hardware-chip-outline" size={28} color={muted} />
+              </View>
+              <Text style={[styles.stateText, { color: muted }]}>
+                {query ? "No devices match your search" : "No devices in this home"}
+              </Text>
+              {!query && (
+                <TouchableOpacity
+                  style={[styles.emptyAction, { backgroundColor: tint }]}
+                  onPress={() => setShowAddModal(true)}
+                >
+                  <Ionicons name="add" size={16} color="#fff" />
+                  <Text style={styles.emptyActionText}>Add a device</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          ) : (
+            <View style={styles.deviceList}>
+              {filtered.map((item, index) => (
+                <Pressable
+                  key={item._id}
+                  onPress={() => router.push(`/(app)/devices/${item._id}` as any)}
+                  style={({ pressed }) => [
+                    styles.cardPressable,
+                    pressed && styles.cardPressed,
+                  ]}
+                >
+                  <View style={[styles.card, { backgroundColor: card, borderColor: border }]}>
+                    <View style={styles.cardTop}>
+                      {/* Icon with status dot */}
+                      <View style={styles.iconArea}>
+                        <View style={[styles.iconWrap, { backgroundColor: `${tint}18` }]}>
+                          <Ionicons name="hardware-chip-outline" size={20} color={tint} />
+                        </View>
+                        <View
                           style={[
-                            styles.statusText,
-                            { color: item.isActive ? "#22c55e" : "#ff3b30" },
+                            styles.statusDot,
+                            { backgroundColor: item.isActive ? "#22c55e" : "#ff3b30" },
+                          ]}
+                        />
+                      </View>
+
+                      {/* Info */}
+                      <View style={styles.cardInfo}>
+                        <Text style={[styles.deviceName, { color: text }]} numberOfLines={1}>
+                          {item.name}
+                        </Text>
+                        <View style={styles.metaRow}>
+                          <Ionicons name="location-outline" size={11} color={muted} />
+                          <Text style={[styles.metaText, { color: muted }]} numberOfLines={1}>
+                            {item.location}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Right */}
+                      <View style={styles.cardRight}>
+                        <View
+                          style={[
+                            styles.statusBadge,
+                            { backgroundColor: item.isActive ? "#22c55e18" : "#ff3b3018" },
                           ]}
                         >
-                          {item.isActive ? "Active" : "Offline"}
+                          <Text
+                            style={[
+                              styles.statusText,
+                              { color: item.isActive ? "#22c55e" : "#ff3b30" },
+                            ]}
+                          >
+                            {item.isActive ? "Active" : "Offline"}
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          onPress={(e) => {
+                            e.stopPropagation?.();
+                            setSelectedDeviceId(item._id);
+                            setSelectedDeviceName(item.name);
+                            setShowDeleteModal(true);
+                          }}
+                          style={[styles.deleteBtn, { backgroundColor: "#ff3b3012" }]}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Ionicons name="trash-outline" size={15} color="#ff3b30" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    {/* Footer */}
+                    <View style={[styles.cardFooter, { borderTopColor: border }]}>
+                      <View style={styles.footerItem}>
+                        <Ionicons name="time-outline" size={11} color={muted} />
+                        <Text style={[styles.footerText, { color: muted }]}>
+                          {item.lastSeen ? `Seen ${item.lastSeen}` : "Never seen"}
                         </Text>
                       </View>
-                      <TouchableOpacity
-                        onPress={(e) => {
-                          e.stopPropagation?.();
-                          setSelectedDeviceId(item._id);
-                          setSelectedDeviceName(item.name);
-                          setShowDeleteModal(true);
-                        }}
-                        style={[styles.deleteBtn, { backgroundColor: "#ff3b3012" }]}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Ionicons name="trash-outline" size={15} color="#ff3b30" />
-                      </TouchableOpacity>
+                      <View style={styles.footerItem}>
+                        <Ionicons name="calendar-outline" size={11} color={muted} />
+                        <Text style={[styles.footerText, { color: muted }]}>
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </Text>
+                      </View>
                     </View>
                   </View>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </ScrollView>
 
-                  {/* Footer */}
-                  <View style={[styles.cardFooter, { borderTopColor: border }]}>
-                    <View style={styles.footerItem}>
-                      <Ionicons name="time-outline" size={11} color={muted} />
-                      <Text style={[styles.footerText, { color: muted }]}>
-                        {item.lastSeen ? `Seen ${item.lastSeen}` : "Never seen"}
-                      </Text>
-                    </View>
-                    <View style={styles.footerItem}>
-                      <Ionicons name="calendar-outline" size={11} color={muted} />
-                      <Text style={[styles.footerText, { color: muted }]}>
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </Pressable>
-            ))}
-          </View>
-        )}
-      </ScrollView>
-
-      <AddDeviceModal
-        visible={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSuccess={fetchDevices}
-        homeId={id as string}
-      />
-      <DeleteDeviceModal
-        visible={showDeleteModal}
-        deviceId={selectedDeviceId}
-        deviceName={selectedDeviceName}
-        onClose={() => {
-          setShowDeleteModal(false);
-          setSelectedDeviceId(undefined);
-          setSelectedDeviceName("");
-        }}
-        onSuccess={fetchDevices}
-      />
-    </ThemedView>
+        <AddDeviceModal
+          visible={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSuccess={fetchDevices}
+          homeId={id as string}
+        />
+        <DeleteDeviceModal
+          visible={showDeleteModal}
+          deviceId={selectedDeviceId}
+          deviceName={selectedDeviceName}
+          onClose={() => {
+            setShowDeleteModal(false);
+            setSelectedDeviceId(undefined);
+            setSelectedDeviceName("");
+          }}
+          onSuccess={fetchDevices}
+        />
+      </ThemedView>
+    </SafeAreaView>
   );
 }
 

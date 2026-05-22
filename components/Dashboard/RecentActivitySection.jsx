@@ -38,7 +38,7 @@ const RecentActivitySection = ({
       {activities?.length > 0 ? (
         activities.map((item, i) => (
           <ActivityItem
-            key={item.id || i}
+            key={item._id || i}
             item={item}
           />
         ))
