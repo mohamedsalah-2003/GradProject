@@ -1,5 +1,5 @@
-import api from "./api";
 import { storage } from "../utils/storage";
+import api from "./api";
 
 
 export const signupRequest = async (body) => {
@@ -28,5 +28,10 @@ export const refreshTokenRequest = async () => {
       "refreshtoken": await storage.get("refreshtoken")
     }
   });
+  return response.data;
+};
+
+export const confirmEmailRequest = async (body) => {
+  const response = await api.put("/users/confirm", body);
   return response.data;
 };

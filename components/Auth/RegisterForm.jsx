@@ -12,15 +12,15 @@ import {
   View,
 } from "react-native";
 
-import GenderField from "../../components/Auth/GenderField.jsx";
 import DOBField from "../../components/Auth/DOBField.jsx";
+import GenderField from "../../components/Auth/GenderField.jsx";
 import ResponseMessage from "../../components/Auth/responseMessage";
 import Loader from "../../components/ui/Loader";
 
-import { signupRequest } from "../../services/auth.service";
-import useRegisterForm from "../../hooks/Auth/useRegisterForm";
-import { LogoComponent } from "../ui/logoComponent.jsx";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import useRegisterForm from "../../hooks/Auth/useRegisterForm";
+import { signupRequest } from "../../services/auth.service";
+import { LogoComponent } from "../ui/logoComponent.jsx";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -36,29 +36,53 @@ export default function RegisterForm() {
     if (serverMessage) setServerMessage(null);
   };
 
-  const handleSignUp = async () => {
-    if (isLoading) return;
+  // const handleSignUp = async () => {
+  //   if (isLoading) return;
 
-    const { ok, payload } = actions.validate();
-    if (!ok) return;
+  //   const { ok, payload } = actions.validate();
+  //   if (!ok) return;
 
-    try {
-      setIsLoading(true);
-      await signupRequest(payload);
-      setServerMessageType("success");
-      setServerMessage("REGISTER_SUCCESS");
-    } catch (error) {
-      setServerMessageType("error");
-      if (error?.response) {
-        setServerMessage(error.response.data?.message || "Something went wrong");
-      } else {
-        setServerMessage("Network error, please try again");
-      }
-    } finally {
-      setIsLoading(false);
+  //   try {
+  //     setIsLoading(true);
+  //     await signupRequest(payload);
+  //     setServerMessageType("success");
+  //     setServerMessage("REGISTER_SUCCESS");
+  //   } catch (error) {
+  //     setServerMessageType("error");
+  //     if (error?.response) {
+  //       setServerMessage(error.response.data?.message || "Something went wrong");
+  //     } else {
+  //       setServerMessage("Network error, please try again");
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+const handleSignUp = async () => {
+  if (isLoading) return;
+
+  const { ok, payload } = actions.validate();
+  if (!ok) return;
+
+  try {
+    setIsLoading(true);
+    await signupRequest(payload);
+
+    router.push({
+      pathname: "/confirm-email",
+      params: { email: payload.email },
+    });
+  } catch (error) {
+    setServerMessageType("error");
+    if (error?.response) {
+      setServerMessage(error.response.data?.message || "Something went wrong");
+    } else {
+      setServerMessage("Network error, please try again");
     }
-  };
-
+  } finally {
+    setIsLoading(false);
+  }
+};
   const FormContent = (
     <ScrollView
       style={styles.flex} // ✅ مهم للـ web
@@ -275,23 +299,10 @@ export default function RegisterForm() {
       )}
 
       {/* Response */}
-      <ResponseMessage
-        type={serverMessageType}
-        message={serverMessageType === "error" ? serverMessage : null}
-      >
-        {serverMessage === "REGISTER_SUCCESS" ? (
-          <>
-            Registered successfully, now you can{" "}
-            <Text
-              onPress={() => router.push("/login")}
-              style={{ textDecorationLine: "underline", fontWeight: "800" }}
-            >
-              login
-            </Text>
-            .
-          </>
-        ) : null}
-      </ResponseMessage>
+<ResponseMessage
+  type={serverMessageType}
+  message={serverMessageType === "error" ? serverMessage : null}
+/>
 
       {/* Sign Up */}
       <TouchableOpacity
