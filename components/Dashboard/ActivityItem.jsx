@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { C } from "../../constants/colors";
 
 const formatTime = (isoString) => {
@@ -38,25 +39,38 @@ const formatTime = (isoString) => {
   return `${dateStr}, ${timeStr}`;
 };
 
-const activityIcon = (type, title = "") => {
+const activityIcon = (type, title = "", anomalyType = "") => {
   const t = title.toLowerCase();
+  const a = (anomalyType || "").toLowerCase().replace(/_/g, " ");
 
-  if (t.includes("fire"))                            return { name: "flame-outline",            color: C.red,      bg: C.redBg    };
-  if (t.includes("gas"))                             return { name: "cloud-outline",             color: C.amber,    bg: C.amberBg  };
-  if (t.includes("motion") || t.includes("intrusion")) return { name: "walk-outline",            color: C.blue,     bg: C.blueBg   };
-  if (t.includes("water"))                           return { name: "water-outline",             color: C.blue,     bg: C.blueBg   };
-  if (t.includes("energy"))                          return { name: "flash-outline",             color: C.purple,   bg: C.purpleBg };
-  if (type === "alert")                              return { name: "notifications-outline",     color: C.red,      bg: C.redBg    };
+  if (a.includes("fire"))                              return { name: "flame-outline",            color: C.red,      bg: C.redBg    };
+  if (a.includes("gas"))                               return { name: "cloud-outline",             color: C.amber,    bg: C.amberBg  };
+  if (a.includes("intrusion"))                           return { lib: "MaterialCommunityIcons", name: "robber", color: C.red, bg: C.redBg };
+  if (a.includes("motion"))                              return { name: "walk-outline",              color: C.blue,     bg: C.blueBg   };
+  if (a.includes("water"))                             return { name: "water-outline",             color: C.blue,     bg: C.blueBg   };
+  if (a.includes("energy"))                            return { name: "flash-outline",             color: C.purple,   bg: C.purpleBg };
+
+  if (t.includes("fire"))                              return { name: "flame-outline",            color: C.red,      bg: C.redBg    };
+  if (t.includes("gas"))                               return { name: "cloud-outline",             color: C.amber,    bg: C.amberBg  };
+  if (t.includes("person") || t.includes("intrusion")) return { lib: "MaterialCommunityIcons", name: "robber", color: C.red, bg: C.redBg };
+  if (t.includes("motion"))                            return { name: "walk-outline",              color: C.blue,     bg: C.blueBg   };
+  if (t.includes("water"))                             return { name: "water-outline",             color: C.blue,     bg: C.blueBg   };
+  if (t.includes("energy"))                            return { name: "flash-outline",             color: C.purple,   bg: C.purpleBg };
+
+  if (type === "Critical")                             return { name: "warning-outline",           color: C.red,      bg: C.redBg    };
+  if (type === "Warning")                              return { name: "alert-circle-outline",      color: C.amber,    bg: C.amberBg  };
+  if (type === "alert")                                return { name: "notifications-outline",     color: C.red,      bg: C.redBg    };
   return                                                    { name: "checkmark-circle-outline",  color: C.greenDark,bg: C.greenBg  };
 };
 
 const ActivityItem = ({ item }) => {
-  const { name, color, bg } = activityIcon(item.type, item.title);
+  const { lib = "Ionicons", name, color, bg } = activityIcon(item.type, item.title, item.anomalyType);
+  const Icon = lib === "MaterialCommunityIcons" ? MaterialCommunityIcons : Ionicons;
 
   return (
     <View style={styles.container}>
       <View style={[styles.iconWrapper, { backgroundColor: bg }]}>
-        <Ionicons name={name} size={18} color={color} />
+        <Icon name={name} size={18} color={color} />
       </View>
 
       <View style={styles.textContainer}>

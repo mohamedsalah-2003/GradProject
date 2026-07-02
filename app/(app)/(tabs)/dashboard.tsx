@@ -76,6 +76,7 @@ const fetchDashboard = useCallback(async (silent = false) => {
         type: latestAlert.type,
         title: latestAlert.description,
         time: latestAlert.time,
+        anomalyType: latestAlert.anomalyType,
       };
 
       return {
