@@ -122,6 +122,8 @@ export default function GenderField({
 
               <Picker
                 selectedValue={tempGender}
+                themeVariant="light"
+                itemStyle={ios.pickerItem}
                 onValueChange={(value) => {
                   setTempGender(value);
                   callClearError();
@@ -207,7 +209,7 @@ export default function GenderField({
 }
 
 const s = StyleSheet.create({
-  label: { fontWeight: "600", marginBottom: 8, marginTop: 10 },
+  label: { fontWeight: "600", marginBottom: 8, marginTop: 10, color: "#111827" },
 
   inputWrapper: {
     backgroundColor: "#E5E7EB",
@@ -283,6 +285,7 @@ const ios = StyleSheet.create({
     alignItems: "center",
   },
   btnPrimaryText: { fontWeight: "700", color: "#fff" },
+  pickerItem: { color: "#111827", fontSize: 18 },
 });
 
 const and = StyleSheet.create({

@@ -355,10 +355,10 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
   },
 
-  title: { fontSize: 24, fontWeight: "700", textAlign: "center" },
+  title: { fontSize: 24, fontWeight: "700", textAlign: "center", color: "#111827" },
   subtitle: { textAlign: "center", color: "#6B7280", marginTop: 8, marginBottom: 20 },
 
-  label: { fontWeight: "600", marginBottom: 8, marginTop: 10 },
+  label: { fontWeight: "600", marginBottom: 8, marginTop: 10, color: "#111827" },
 
   row: { flexDirection: "row", gap: 10 },
   half: { flex: 1 },
@@ -373,7 +373,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  input: { flex: 1, marginLeft: 10, borderWidth: 0, underlineColorAndroid: "transparent" },
+  input: { flex: 1, marginLeft: 10, borderWidth: 0, underlineColorAndroid: "transparent", color: "#111827" },
 
   inputError: { borderWidth: 1, borderColor: "#DC2626" },
   inputFocused: { borderWidth: 2, borderColor: "#0891b2" },

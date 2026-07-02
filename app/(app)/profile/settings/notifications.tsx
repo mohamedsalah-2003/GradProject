@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl } from "react-native";
 import { getUserAlerts } from "../../../../services/alert.service";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { alertColors } from "../../../../constants/alertColors";
+import { normalizeAlert } from "@/utils/mapAlert";
 
 export default function NotificationsScreen() {
   const initialData = [
@@ -54,17 +56,44 @@ export default function NotificationsScreen() {
     loadData();
   };
 
-  const renderItem = ({ item }: { item: any }) => (
+  const getAlertConfig = (item: any) => {
+    const { type } = normalizeAlert(item);
+    return alertColors[type];
+  };
+
+  const renderAlertIcon = (item: any, color: string) => {
+    const { type } = normalizeAlert(item);
+
+    if (item.title?.toLowerCase().includes("gas")) {
+      return <Ionicons name="flame" size={24} color={color} />;
+    }
+
+    if (type === "Critical") {
+      return <MaterialIcons name="error-outline" size={24} color={color} />;
+    }
+
+    return <Ionicons name="warning-outline" size={24} color={color} />;
+  };
+
+  const renderItem = ({ item }: { item: any }) => {
+    const config = getAlertConfig(item);
+    const isUnread = !item.isRead;
+
+    return (
     <TouchableOpacity 
-      style={[styles.notificationCard, !item.isRead && styles.unreadCard]}
+      style={[
+        styles.notificationCard,
+        isUnread && { borderLeftWidth: 4, borderLeftColor: config.primary },
+      ]}
       activeOpacity={0.7}
     >
-      <View style={styles.iconContainer}>
-        <Ionicons 
-          name={item.title?.toLowerCase().includes('gas') ? "flame" : "notifications"} 
-          size={24} 
-          color={!item.isRead ? "#3B82F6" : "#64748B"} 
-        />
+      <View
+        style={[
+          styles.iconContainer,
+          isUnread && { backgroundColor: config.iconBg },
+        ]}
+      >
+        {renderAlertIcon(item, isUnread ? config.primary : "#64748B")}
       </View>
       <View style={styles.textContainer}>
         <View style={styles.headerRow}>
@@ -74,7 +103,8 @@ export default function NotificationsScreen() {
         <Text style={styles.message} numberOfLines={2}>{item.message}</Text>
       </View>
     </TouchableOpacity>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -132,7 +162,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3
   },
-  unreadCard: { borderLeftWidth: 4, borderLeftColor: '#3B82F6' },
   iconContainer: { 
     width: 48, height: 48, borderRadius: 14, 
     backgroundColor: '#334155', justifyContent: 'center', alignItems: 'center', marginRight: 15 

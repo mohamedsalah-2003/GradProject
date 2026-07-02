@@ -39,32 +39,87 @@ const formatTime = (isoString) => {
   return `${dateStr}, ${timeStr}`;
 };
 
+const ANOMALY_ICONS = {
+  fire: {
+    name: "flame-outline",
+    color: C.red,
+    bg: C.redBg,
+  },
+  gas: {
+    name: "cloud-outline",
+    color: C.red,
+    bg: C.redBg,
+  },
+  intrusion: {
+    lib: "MaterialCommunityIcons",
+    name: "robber",
+    color: C.red,
+    bg: C.redBg,
+  },
+  water: {
+    name: "water-outline",
+    color: C.amber,
+    bg: C.amberBg,
+  },
+  energy: {
+    name: "flash-outline",
+    color: C.amber,
+    bg: C.amberBg,
+  },
+};
+
+const detectAnomaly = (title = "", anomalyType = "") => {
+  const sources = [
+    (anomalyType || "").toLowerCase().replace(/_/g, " "),
+    (title || "").toLowerCase(),
+  ].filter(Boolean);
+
+  for (const text of sources) {
+    if (text.includes("fire")) return "fire";
+    if (text.includes("gas")) return "gas";
+    if (
+      text.includes("intrusion") ||
+      text.includes("unknown person") ||
+      text.includes("person detected")
+    ) {
+      return "intrusion";
+    }
+    if (text.includes("water")) return "water";
+    if (text.includes("energy")) return "energy";
+  }
+
+  return null;
+};
+
 const activityIcon = (type, title = "", anomalyType = "") => {
-  const t = title.toLowerCase();
-  const a = (anomalyType || "").toLowerCase().replace(/_/g, " ");
+  const anomaly = detectAnomaly(title, anomalyType);
+  if (anomaly && ANOMALY_ICONS[anomaly]) {
+    return ANOMALY_ICONS[anomaly];
+  }
 
-  if (a.includes("fire"))                              return { name: "flame-outline",            color: C.red,      bg: C.redBg    };
-  if (a.includes("gas"))                               return { name: "cloud-outline",             color: C.amber,    bg: C.amberBg  };
-  if (a.includes("intrusion"))                           return { lib: "MaterialCommunityIcons", name: "robber", color: C.red, bg: C.redBg };
-  if (a.includes("motion"))                              return { name: "walk-outline",              color: C.blue,     bg: C.blueBg   };
-  if (a.includes("water"))                             return { name: "water-outline",             color: C.blue,     bg: C.blueBg   };
-  if (a.includes("energy"))                            return { name: "flash-outline",             color: C.purple,   bg: C.purpleBg };
+  const normalizedType = (type || "").toLowerCase();
 
-  if (t.includes("fire"))                              return { name: "flame-outline",            color: C.red,      bg: C.redBg    };
-  if (t.includes("gas"))                               return { name: "cloud-outline",             color: C.amber,    bg: C.amberBg  };
-  if (t.includes("person") || t.includes("intrusion")) return { lib: "MaterialCommunityIcons", name: "robber", color: C.red, bg: C.redBg };
-  if (t.includes("motion"))                            return { name: "walk-outline",              color: C.blue,     bg: C.blueBg   };
-  if (t.includes("water"))                             return { name: "water-outline",             color: C.blue,     bg: C.blueBg   };
-  if (t.includes("energy"))                            return { name: "flash-outline",             color: C.purple,   bg: C.purpleBg };
+  if (normalizedType === "critical" || normalizedType === "high" || normalizedType === "alert") {
+    return { name: "warning-outline", color: C.red, bg: C.redBg };
+  }
 
-  if (type === "Critical")                             return { name: "warning-outline",           color: C.red,      bg: C.redBg    };
-  if (type === "Warning")                              return { name: "alert-circle-outline",      color: C.amber,    bg: C.amberBg  };
-  if (type === "alert")                                return { name: "notifications-outline",     color: C.red,      bg: C.redBg    };
-  return                                                    { name: "checkmark-circle-outline",  color: C.greenDark,bg: C.greenBg  };
+  if (
+    normalizedType === "warning" ||
+    normalizedType === "medium" ||
+    normalizedType === "low"
+  ) {
+    return { name: "alert-circle-outline", color: C.amber, bg: C.amberBg };
+  }
+
+  return { name: "checkmark-circle-outline", color: C.greenDark, bg: C.greenBg };
 };
 
 const ActivityItem = ({ item }) => {
-  const { lib = "Ionicons", name, color, bg } = activityIcon(item.type, item.title, item.anomalyType);
+  const { lib = "Ionicons", name, color, bg } = activityIcon(
+    item.type || item.severity,
+    item.title,
+    item.anomalyType
+  );
   const Icon = lib === "MaterialCommunityIcons" ? MaterialCommunityIcons : Ionicons;
 
   return (

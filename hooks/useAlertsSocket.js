@@ -44,7 +44,7 @@ export default function useAlertsSocket() {
           alertItem.type === "Critical"
             ? "error"
             : alertItem.type === "Warning"
-            ? "info"
+            ? "warning"
             : "success",
         text1: alertItem.title,
         text2: alertItem.description,

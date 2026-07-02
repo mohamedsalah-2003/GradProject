@@ -21,6 +21,13 @@ export const toastConfig = {
       <Text style={styles.message}>{text2}</Text>
     </View>
   ),
+
+  warning: ({ text1, text2 }) => (
+    <View style={[styles.container, styles.warning]}>
+      <Text style={styles.title}>{text1}</Text>
+      <Text style={styles.message}>{text2}</Text>
+    </View>
+  ),
 };
 
 const styles = StyleSheet.create({
@@ -57,5 +64,9 @@ const styles = StyleSheet.create({
 
   info: {
     backgroundColor: "#2563eb",
+  },
+
+  warning: {
+    backgroundColor: "#d97706",
   },
 });

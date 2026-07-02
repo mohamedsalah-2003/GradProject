@@ -134,6 +134,8 @@ export default function DOBField({
                     mode="date"
                     maximumDate={new Date()}
                     display="spinner"
+                    themeVariant="light"
+                    textColor="#111827"
                     onChange={onChangeMobile}
                   />
 
@@ -195,7 +197,7 @@ export default function DOBField({
 }
 
 const dStyles = StyleSheet.create({
-  label: { fontWeight: "600", marginBottom: 8, marginTop: 10 },
+  label: { fontWeight: "600", marginBottom: 8, marginTop: 10, color: "#111827" },
 
   inputWrapper: {
     backgroundColor: "#E5E7EB",

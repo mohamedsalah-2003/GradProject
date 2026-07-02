@@ -4,7 +4,7 @@
     "slug": "AegisIQ",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "frontend",
     "icon": "./assets/images/lightAppIcon.png",
