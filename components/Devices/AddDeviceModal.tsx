@@ -1,6 +1,6 @@
 import { addDevice } from "@/services/devices.service";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -41,8 +41,8 @@ export default function AddDeviceModal({
     name: "",
     location: "",
     isActive: true,
+    isCamera: false,
   });
-
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{
     text: string;
@@ -74,8 +74,8 @@ export default function AddDeviceModal({
         name: formData.name.trim(),
         location: formData.location.trim(),
         isActive: formData.isActive,
+        isCamera: formData.isCamera,
       });
-
       setMessage({ text: "Device added successfully!", type: "success" });
 
       setTimeout(() => {
@@ -95,7 +95,13 @@ export default function AddDeviceModal({
   };
 
   const resetForm = () => {
-    setFormData({ homeId: initialHomeId || "", name: "", location: "", isActive: true });
+    setFormData({
+      homeId: initialHomeId || "",
+      name: "",
+      location: "",
+      isActive: true,
+      isCamera: false,
+    });
     setErrors({});
     setMessage(null);
     isSubmittingRef.current = false;
@@ -205,7 +211,57 @@ export default function AddDeviceModal({
 
               {renderInput("Device Name", "e.g., Living Room Sensor", "name")}
               {renderInput("Location", "e.g., Living Room", "location")}
+              {/* Device Type toggle */}
+              <View style={styles.fieldContainer}>
+                <Text style={[styles.label, { color: text }]}>Device Type</Text>
+                <View style={[styles.toggleWrap, { backgroundColor: "#f5f5f5", borderColor: border }]}>
+                  <TouchableOpacity
+                    style={[
+                      styles.toggleOption,
+                      !formData.isCamera && { backgroundColor: tint },
+                    ]}
+                    onPress={() => !isLoading && setFormData((p) => ({ ...p, isCamera: false }))}
+                    disabled={isLoading}
+                  >
+                    <Ionicons
+                      name="hardware-chip-outline"
+                      size={15}
+                      color={!formData.isCamera ? "#fff" : muted}
+                    />
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        { color: !formData.isCamera ? "#fff" : muted },
+                      ]}
+                    >
+                      Sensor
+                    </Text>
+                  </TouchableOpacity>
 
+                  <TouchableOpacity
+                    style={[
+                      styles.toggleOption,
+                      formData.isCamera && { backgroundColor: tint },
+                    ]}
+                    onPress={() => !isLoading && setFormData((p) => ({ ...p, isCamera: true }))}
+                    disabled={isLoading}
+                  >
+                    <MaterialCommunityIcons
+                      name="cctv"
+                      size={15}
+                      color={formData.isCamera ? "#fff" : muted}
+                    />
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        { color: formData.isCamera ? "#fff" : muted },
+                      ]}
+                    >
+                      Camera
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
               {/* Status toggle */}
               <View style={styles.fieldContainer}>
                 <Text style={[styles.label, { color: text }]}>Status</Text>

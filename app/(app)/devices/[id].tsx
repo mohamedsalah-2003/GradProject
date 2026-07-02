@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -23,6 +23,7 @@ interface Device {
   name: string;
   location: string;
   isActive: boolean;
+  isCamera: boolean;
   lastSeen: string | null;
   createdAt: string;
   updatedAt: string;
@@ -184,7 +185,11 @@ export default function DeviceDetailsScreen() {
           {/* Hero card */}
           <View style={[styles.heroCard, { backgroundColor: `${tint}10`, borderColor: border }]}>
             <View style={[styles.heroIcon, { backgroundColor: `${tint}20` }]}>
-              <Ionicons name="hardware-chip-outline" size={32} color={tint} />
+              {device.isCamera ? (
+                <MaterialCommunityIcons name="cctv" size={20} color={tint} />
+              ) : (
+                <Ionicons name="hardware-chip-outline" size={20} color={tint} />
+              )}
             </View>
             <View style={styles.heroInfo}>
               <Text style={[styles.heroName, { color: text }]}>{device.name}</Text>
@@ -218,6 +223,11 @@ export default function DeviceDetailsScreen() {
           {/* Device Info */}
           <SectionCard title="Device Information" icon="phone-portrait-outline">
             <DetailRow label="Device ID" value={device._id} icon="cube-outline" mono />
+            <DetailRow
+              label="Device Type"
+              value={device.isCamera ? "Camera Device" : "Sensor Device"}
+              icon={device.isCamera ? "camera-outline" : "hardware-chip-outline"}
+            />
             <DetailRow label="Status" value={device.isActive ? "Active" : "Offline"} icon="radio-button-on-outline" />
             <DetailRow label="Last Seen" value={device.lastSeen || "Never"} icon="time-outline" last />
           </SectionCard>

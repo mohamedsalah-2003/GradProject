@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -25,6 +25,7 @@ interface Device {
   name: string;
   location: string;
   isActive: boolean;
+  isCamera: boolean;
   lastSeen: string | null;
   createdAt: string;
   homeId: { _id: string; name: string };
@@ -104,7 +105,7 @@ export default function HomeDevicesScreen() {
   const onlineCount = devices.filter((d) => d.isActive).length;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor:"#F8FAFC"}}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F8FAFC" }}>
       <ThemedView style={[styles.container, { backgroundColor: background }]}>
         {/* Error Banner */}
         {tokenError && (
@@ -260,7 +261,11 @@ export default function HomeDevicesScreen() {
                       {/* Icon with status dot */}
                       <View style={styles.iconArea}>
                         <View style={[styles.iconWrap, { backgroundColor: `${tint}18` }]}>
-                          <Ionicons name="hardware-chip-outline" size={20} color={tint} />
+                          <Ionicons
+                            name={item.isCamera ? "camera-outline" : "hardware-chip-outline"}
+                            size={20}
+                            color={tint}
+                          />
                         </View>
                         <View
                           style={[
@@ -279,6 +284,16 @@ export default function HomeDevicesScreen() {
                           <Ionicons name="location-outline" size={11} color={muted} />
                           <Text style={[styles.metaText, { color: muted }]} numberOfLines={1}>
                             {item.location}
+                          </Text>
+                        </View>
+                        <View style={styles.metaRow}>
+                          {item.isCamera ? (
+                            <MaterialCommunityIcons name="cctv" size={20} color={tint} />
+                          ) : (
+                            <Ionicons name="hardware-chip-outline" size={20} color={tint} />
+                          )}
+                          <Text style={[styles.metaText, { color: muted }]} numberOfLines={1}>
+                            {item.isCamera ? "Camera Device" : "Sensor Device"}
                           </Text>
                         </View>
                       </View>

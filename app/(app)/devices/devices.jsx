@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -71,7 +71,11 @@ export default function DevicesScreen() {
           {/* Device icon + status indicator */}
           <View style={styles.iconArea}>
             <View style={[styles.iconWrap, { backgroundColor: `${tint}18` }]}>
-              <Ionicons name="hardware-chip-outline" size={22} color={tint} />
+              {item.isCamera ? (
+                <MaterialCommunityIcons name="cctv" size={20} color={tint} />
+              ) : (
+                <Ionicons name="hardware-chip-outline" size={20} color={tint} />
+              )}
             </View>
             <View
               style={[
@@ -95,6 +99,15 @@ export default function DevicesScreen() {
               <Ionicons name="home-outline" size={12} color={muted} />
               <Text style={[styles.metaText, { color: muted }]} numberOfLines={1}>
                 {item.homeId?.name}
+              </Text>
+              <Text style={[styles.metaDot, { color: muted }]}>·</Text>
+              <Ionicons
+                name={item.isCamera ? "camera-outline" : "hardware-chip-outline"}
+                size={12}
+                color={muted}
+              />
+              <Text style={[styles.metaText, { color: muted }]} numberOfLines={1}>
+                {item.isCamera ? "Camera" : "Sensor"}
               </Text>
             </View>
           </View>
