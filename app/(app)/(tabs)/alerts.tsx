@@ -134,7 +134,7 @@ export default function Alerts() {
         <AlertsHeader unreadCount={unreadCount} />
 
         <Text style={styles.summaryText}>
-          {count} alerts · {unreadCount} unread
+          {alerts.length} alerts · {unreadCount} unread
         </Text>
 
         <AlertFilter selected={selectedFilter} onSelect={setSelectedFilter} />

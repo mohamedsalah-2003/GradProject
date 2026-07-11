@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "context/AuthContext.tsx", "app/(app)/(tabs)/devices.jsx", "utils/toastConfig.js", "hooks/useAlertsSocket.js", "components/Home/HeroSection.jsx", "constants/sensors.js"  ]
+, "context/AuthContext.tsx", "app/(app)/(tabs)/devices.jsx", "utils/toastConfig.js", "hooks/useAlertsSocket.js", "components/Home/HeroSection.jsx", "constants/sensors.js", "components/Auth/LoginForm.jsx"  ]
 }

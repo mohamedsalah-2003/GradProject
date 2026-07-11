@@ -5,7 +5,17 @@ import Toast from "react-native-toast-message";
 import IconThemeSync from "../components/IconThemeSync";
 import { toastConfig } from "../utils/toastConfig";
 import SocketListener from "../context/socketListener";
+import { Platform } from "react-native";
 
+
+
+
+if (Platform.OS !== "web") {
+  const messaging = require("@react-native-firebase/messaging").default;
+  messaging().setBackgroundMessageHandler(async (remoteMessage: any) => {
+    console.log("Background FCM:", remoteMessage);
+  });
+}
 export default function Layout() {
   return (
     <SafeAreaProvider>

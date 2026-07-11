@@ -3,6 +3,10 @@ import { connectSocket, disconnectSocket } from "../services/socket";
 import { storage } from "../utils/storage";
 import { useAlertsStore } from "../app/store/alertsStore";
 import { signoutRequest } from "@/services/auth.service";
+import { removeFcmTokenRequest } from "@/services/notification.service";
+import messaging, { getToken } from "@react-native-firebase/messaging";
+import { getWebMessaging } from "@/config/firebase.web";
+import { FIREBASE_VAPID_KEY } from "@/config/env";
 type User = {
   fullname: string;
   email: string;
@@ -68,14 +72,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = async () => {
+    // إزالة FCM token من السيرفر
+    const fcmToken = await storage.get("fcmToken");
+    if (fcmToken) {
+      await removeFcmTokenRequest({ token: fcmToken });
+    }
     await disconnectSocket();
     await signoutRequest();
     await storage.remove("user");
     await storage.remove("accesstoken");
     await storage.remove("refreshtoken");
+    await storage.remove("fcmToken");
 
     setUser(null);
-
     // reset alerts state بالكامل
     setAlerts([]);
     setUnreadCount(0);

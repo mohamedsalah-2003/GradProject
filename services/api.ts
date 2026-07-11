@@ -11,6 +11,7 @@ api.interceptors.request.use(
         const token = await storage.get("accesstoken");
 
         if (token) {
+            console.log("Adding token to request headers:", token);
             config.headers = config.headers ?? {};
             config.headers["accesstoken"] = token;
         }

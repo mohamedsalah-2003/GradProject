@@ -13,8 +13,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import ResponseMessage from "../../components/Auth/responseMessage";
-import Loader from "../../components/ui/Loader";
+import ResponseMessage from "./responseMessage";
+import Loader from "../ui/Loader.jsx";
 
 import { useAlertsStore } from "../../app/store/alertsStore";
 import { useAuth } from "../../context/AuthContext";
@@ -22,7 +22,12 @@ import useLoginForm from "../../hooks/Auth/useLoginForm";
 import { signinRequest } from "../../services/auth.service";
 import { storage } from "../../utils/storage";
 import { LogoComponent } from "../ui/logoComponent";
-import { connectSocket } from "./../../services/socket.ts";
+import { connectSocket } from "../../services/socket";
+import messaging from "@react-native-firebase/messaging";
+import { updateFcmTokenRequest } from "../../services/notification.service";
+import * as Device from "expo-device";
+import { FIREBASE_VAPID_KEY } from "../../config/env";
+
 export default function LoginForm() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -47,12 +52,12 @@ export default function LoginForm() {
 
     const { ok, payload } = actions.validate();
 
-  
+
 
     if (!ok) return;
 
 
-    
+
     try {
       setServerMessage(null);
       setIsLoading(true);
@@ -74,21 +79,74 @@ export default function LoginForm() {
           setUnreadCount(res.user.unreadAlerts);
         }
         await storage.set("user", JSON.stringify(res.user));
+
+        // ── Native FCM ────────────────────────────────
+        if (Platform.OS !== "web") {
+          try {
+            const authStatus = await messaging().requestPermission();
+            const enabled =
+              authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+              authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+            if (enabled) {
+              const token = await messaging().getToken();
+              await updateFcmTokenRequest({
+                token,
+                platform: Platform.OS,
+                deviceName: Device.deviceName ?? undefined,
+              });
+            }
+          } catch (fcmError) {
+            console.error("Native FCM failed:", fcmError.message);
+          }
+        }
+
+        // ── Web FCM ───────────────────────────────────
+        if (Platform.OS === "web") {
+          try {
+            const permission = await Notification.requestPermission();
+
+            if (permission === "granted") {
+              const { getWebMessaging } = await import("@/config/firebase.web");
+              const { getToken } = await import("firebase/messaging");
+              const messagingInstance = await getWebMessaging();
+              console.log("🔵 Messaging instance:", messagingInstance);
+
+              if (messagingInstance) {
+                const token = await getToken(messagingInstance, {
+                  vapidKey: FIREBASE_VAPID_KEY,
+                });
+                await storage.set("fcmToken", token);
+
+                await updateFcmTokenRequest({
+                  token,
+                  platform: "web",
+                  deviceName: navigator.userAgent.slice(0, 100),
+                });
+                console.log("✅ Token sent to backend");
+              } else {
+                console.log("❌ messagingInstance is null — isSupported() returned false");
+              }
+            }
+          } catch (fcmError) {
+            console.error("❌ Web FCM Error:", fcmError); // مش .message بس — عايزين الـ full error
+          }
+        }
       }
 
       router.replace("/(app)/(tabs)/dashboard");
 
     } catch (error) {
-  
+
       setServerMessageType("error");
       if (error?.response) {
         setServerMessage(error.response.data?.message || "Invalid email or password");
       } else {
         setServerMessage(error?.message || "Something went wrong");
-        
-        
+
+
       }
-      
+
     } finally {
       setIsLoading(false);
 
